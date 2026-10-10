@@ -38,6 +38,7 @@ p{margin:0}
 .steps3 li > span{color:var(--muted);font-size:14px}
 .steps3 button{justify-self:start}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,select,label,input{touch-action:manipulation}
 button{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--panel);color:var(--fg);padding:9px 16px;border-radius:10px;cursor:pointer}
 button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 button:disabled{opacity:.45;cursor:not-allowed}
@@ -47,7 +48,13 @@ select{padding:8px 10px;border-radius:9px;border:1px solid var(--line);backgroun
 .status{font-size:14px;color:var(--muted)}
 .game{display:grid;gap:14px}
 .gamegrid{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:14px;align-items:start}
-@media (max-width:760px){.gamegrid{grid-template-columns:1fr}}
+@media (max-width:760px){
+  .gamegrid{grid-template-columns:1fr}
+  .camcol{order:-1;grid-template-columns:120px minmax(0,1fr);align-items:center;column-gap:12px}
+  .camcol .cam{grid-row:span 2}
+  .camcol label.row{flex-wrap:nowrap;align-items:flex-start}
+  canvas.stage{height:340px}
+}
 canvas.stage{width:100%;height:380px;display:block;border-radius:12px;background:var(--bg)}
 .camcol{display:grid;gap:8px}
 .cam{position:relative;width:100%;aspect-ratio:4/3;background:#000;border-radius:12px;overflow:hidden}
@@ -99,6 +106,7 @@ canvas.graph{width:100%;height:180px;display:block}
       <button id="playBtn" class="primary" disabled>시작</button>
       <button id="stopBtn" disabled>그만하기</button>
     </div>
+    <p class="muted small" id="soundHint">휴대폰에서 소리가 안 나면 무음 모드를 꺼 주세요.</p>
     <p id="modeDesc" class="muted">캐릭터가 네 번 먼저 씹으면, 이어서 네 번 따라 씹어요. 캐릭터 입이 닫히는 순간이 박자예요.</p>
     <div class="gamegrid">
       <canvas id="stage" class="stage"></canvas>
@@ -471,7 +479,16 @@ function tone(at, freq, len, vol){
   o.connect(v).connect(audio.destination); o.start(at); o.stop(at + len + 0.02);
 }
 
+let wakeLock = null;
+async function keepAwake(on){
+  try {
+    if (on && 'wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+    else if (!on && wakeLock){ await wakeLock.release(); wakeLock = null; }
+  } catch {}
+}
+
 $('playBtn').onclick = () => {
+  keepAwake(true);
   audio = audio || new AudioContext();
   audio.resume();
   const mode = $('mode').value;
@@ -537,6 +554,7 @@ function onChew(t){
 
 function finish(stopped){
   if (!game) return;
+  keepAwake(false);
   const g = game; game = null;
   if (g.musicOut){ const at = audio.currentTime; g.musicOut.gain.setValueAtTime(g.musicOut.gain.value, at); g.musicOut.gain.linearRampToValueAtTime(0, at + 0.3); setTimeout(() => g.musicOut.disconnect(), 400); }
   $('playBtn').disabled = false; $('stopBtn').disabled = true; $('mode').disabled = false;
@@ -579,7 +597,7 @@ function drawStage(now){
     const guide = bar >= 1 && bar % 2 === 1, mine = bar >= 2 && bar % 2 === 0;
     const open = guide && el >= 0 ? Math.sin(Math.PI * frac) : 0;   // 박과 박 사이에 벌리고, 박에 닫힘
     drawFace(g, cx, cy, r, open, '#f2c14e', happy);
-    g.font = '600 18px ' + font; g.fillStyle = mine ? accent : ink; g.textAlign = 'left';
+    g.font = '600 ' + (w < 500 ? 16 : 18) + 'px ' + font; g.fillStyle = mine ? accent : ink; g.textAlign = 'left';
     g.fillText(el < 0 || bar === 0 ? '준비…' : guide ? '잘 보고 들어요' : '지금 따라 씹어요!', 16, 30); g.textAlign = 'center';
     if (mine){
       const next = game.targets.find(b => b.t + latency > now - 80);
@@ -602,9 +620,9 @@ function drawStage(now){
   } else {
     // 박자 맞추기: 왼쪽 캐릭터, 오른쪽 레인
     r = Math.min(70, h * 0.2, w * 0.12); cx = Math.max(r + 16, w * 0.22); cy = h * 0.5;
-    const laneX = Math.min(w - 70, w * 0.62), topY = 16, hitY = h - 56;
+    const laneX = Math.min(w - 70, w * 0.62), topY = 62, hitY = h - 56;
     g.fillStyle = css('--panel'); g.strokeStyle = css('--line'); g.lineWidth = 1;
-    g.beginPath(); g.roundRect(laneX - 45, 8, 90, h - 16, 14); g.fill(); g.stroke();
+    g.beginPath(); g.roundRect(laneX - 45, 44, 90, h - 52, 14); g.fill(); g.stroke();
     g.strokeStyle = muted; g.lineWidth = 3;
     g.beginPath(); g.arc(laneX, hitY, 24, 0, Math.PI * 2); g.stroke();
     game.targets.forEach(bt => {
@@ -618,14 +636,14 @@ function drawStage(now){
       g.globalAlpha = 1;
     });
     drawFace(g, cx, cy, r, 0, '#f2c14e', happy);
-    g.font = '600 18px ' + font; g.fillStyle = ink; g.textAlign = 'left';
+    g.font = '600 ' + (w < 500 ? 16 : 18) + 'px ' + font; g.fillStyle = ink; g.textAlign = 'left';
     g.fillText(el < 0 || bar === 0 ? '준비…' : bar % 4 === 0 ? '쉬어요' : '동그라미에 닿을 때 씹어요', 16, 30); g.textAlign = 'center';
   }
 
   // 점수와 연속
   g.textAlign = 'left'; g.font = '600 15px ' + font; g.fillStyle = ink;
   g.fillText('점수 ' + game.score.toLocaleString('ko-KR'), 16, h - 18);
-  if (game.combo >= 2){ g.textAlign = 'right'; g.fillStyle = accent; g.fillText(game.combo + '번 연속', w - 16, h - 18); }
+  if (game.combo >= 2){ g.fillStyle = accent; g.fillText(game.combo + '번 연속', 16, h - 40); }
   g.textAlign = 'center';
 
   // 반짝이
@@ -642,8 +660,10 @@ function drawStage(now){
   game.pops = game.pops.filter(p => now - p.t < 700);
   game.pops.forEach(p => {
     const a = 1 - (now - p.t) / 700;
-    const px = game.mode === 'follow' ? Math.min(w - 80, cx + r + 110) : cx, py = game.mode === 'follow' ? cy : cy - r - 24;
-    g.globalAlpha = a; g.fillStyle = good; g.font = '700 26px ' + font;
+    const side = game.mode === 'follow' && w >= 560, corner = game.mode === 'follow' && w < 560;
+    const px = side ? Math.min(w - 80, cx + r + 110) : corner ? w - 16 : cx, py = side ? cy : corner ? 30 : cy - r - 30;
+    g.textAlign = corner ? 'right' : 'center';
+    g.globalAlpha = a; g.fillStyle = good; g.font = '700 ' + (w < 500 ? 22 : 26) + 'px ' + font;
     g.fillText(p.text, px, py - (1 - a) * 18);
     g.font = '600 14px ' + font; g.fillText('+' + p.pts, px, py + 24 - (1 - a) * 18);
     g.globalAlpha = 1;
