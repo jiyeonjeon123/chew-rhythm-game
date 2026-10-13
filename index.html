@@ -3,167 +3,445 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>씹기 리듬게임</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600;700&display=swap">
+<title>꼭꼭 한 판</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
-/* 레이아웃: 소개 → 시작 3단계 → 게임 무대(왼쪽) + 카메라(오른쪽) → 접힌 개발용 상세 */
+/* v4: 프리텐다드 자간 -2%, 굵기는 세미볼드(600)까지. 처음(내 단계) → 준비 → 모드 → 곡 → 난이도 → 한 판 → 결과 → 666 풀기 */
 :root{
-  --bg:#f4f5f1; --panel:#ffffff; --fg:#1c1d1a; --muted:#686a63; --line:#dfe1da;
-  --accent:#e0602f; --good:#2f9461; --s1:#e0602f; --s2:#3a6fd6; --s3:#2f9461; --s4:#b08a1e; --s5:#8a8d84;
-  --font:'IBM Plex Sans KR',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --bg:#f6f5f0; --panel:#ffffff; --fg:#16171a; --muted:#6a6c70; --line:#e2e1db;
+  --inv:#ffffff; --accent:#ff4d2e; --good:#10a35a; --face:#ffc93c; --blush:#ff8a8a;
+  --soft:#ff6fa3; --bouncy:#ffa514; --firm:#2f6bff;
+  --s0:#16171a; --s1:#ff4d2e; --s2:#2f6bff; --s3:#10a35a; --s4:#b08a1e; --s5:#c04cd6;
+  --font:'Pretendard',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
 }
 @media (prefers-color-scheme:dark){:root{
-  --bg:#151614; --panel:#1f201d; --fg:#eff0ea; --muted:#a2a49c; --line:#33352f;
-  --accent:#ff7d4d; --good:#4fc184; --s1:#ff7d4d; --s2:#7ea3ff; --s3:#4fc184; --s4:#e0b84a; --s5:#9a9d94; color-scheme:dark}}
+  --bg:#141517; --panel:#1e1f22; --fg:#f1f1ee; --muted:#a3a5a9; --line:#34363a;
+  --inv:#ffffff; --accent:#ff6a4d; --good:#3fcf86; --soft:#ff86b4; --bouncy:#ffb83d; --firm:#6f98ff;
+  --s0:#f1f1ee; --s1:#ff6a4d; --s2:#6f98ff; --s3:#3fcf86; --s4:#e0b84a; --s5:#d77ae8; color-scheme:dark}}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.55;word-break:keep-all}
-.wrap{max-width:1040px;margin:0 auto;padding:32px 16px 56px;display:grid;gap:16px}
-h1{font-size:28px;margin:0;text-wrap:balance}
-h2{font-size:16px;margin:0}
+html,body{margin:0;background:#e9e8e2;color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.5;word-break:keep-all;letter-spacing:-0.02em}
+@media (prefers-color-scheme:dark){html,body{background:#0d0e10}}
+button,input,select,textarea{letter-spacing:inherit}
 p{margin:0}
-.muted{color:var(--muted)}
-.hero{display:grid;gap:6px;padding-bottom:4px}
-.eyebrow{font-size:13px;letter-spacing:.04em;color:var(--accent);font-weight:600}
-.lead{font-size:17px;max-width:62ch}
-.small{font-size:13px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;min-width:0}
-.steps3{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;counter-reset:s}
-@media (max-width:760px){.steps3{grid-template-columns:1fr}}
-.steps3 li{display:grid;gap:8px;align-content:start;padding:14px;border:1px solid var(--line);border-radius:12px;counter-increment:s}
-.steps3 li.done{border-color:var(--good)}
-.steps3 .num{display:flex;align-items:center;gap:8px;font-weight:700}
-.steps3 .num::before{content:counter(s);display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--fg);color:var(--panel);font-size:13px}
-.steps3 li.done .num::before{content:'✓';background:var(--good)}
-.steps3 li > span{color:var(--muted);font-size:14px}
-.steps3 button{justify-self:start}
-.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-button,select,label,input{touch-action:manipulation}
-button{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--panel);color:var(--fg);padding:9px 16px;border-radius:10px;cursor:pointer}
+h1,h2,h3{margin:0;font-weight:600}
+b,strong{font-weight:600}
+button{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--panel);color:var(--fg);padding:10px 16px;border-radius:14px;cursor:pointer;-webkit-tap-highlight-color:transparent}
 button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.big{font-size:18px;padding:14px 20px}
+button.wide{width:100%}
 button:disabled{opacity:.45;cursor:not-allowed}
-button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-select,input[type=range]{font:inherit}
-select{padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--fg)}
-.status{font-size:14px;color:var(--muted)}
-.game{display:grid;gap:14px}
-.gamegrid{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:14px;align-items:start}
-@media (max-width:760px){
-  .gamegrid{grid-template-columns:1fr}
-  .camcol{order:-1;grid-template-columns:120px minmax(0,1fr);align-items:center;column-gap:12px}
-  .camcol .cam{grid-row:span 2}
-  .camcol label.row{flex-wrap:nowrap;align-items:flex-start}
-  canvas.stage{height:340px}
+button:active{transform:scale(.97)}
+button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.muted{color:var(--muted)}
+.tiny{font-size:12px}
+.small{font-size:13px}
+
+.layout{display:grid;grid-template-columns:auto minmax(0,420px);gap:40px;justify-content:center;align-items:start;padding:24px 16px}
+@media (max-width:860px){.layout{grid-template-columns:1fr;justify-items:center}}
+
+/* 폰 */
+.phone{height:min(812px,calc(100vh - 48px));min-height:640px;aspect-ratio:390/812;border-radius:54px;background:#111;padding:12px;box-shadow:0 30px 60px rgba(0,0,0,.25),inset 0 0 0 2px #2a2a2a;position:relative}
+.phone::before{content:'';position:absolute;top:22px;left:50%;transform:translateX(-50%);width:110px;height:30px;background:#111;border-radius:20px;z-index:20}
+.screen{position:relative;width:100%;height:100%;border-radius:42px;overflow:hidden;background:var(--bg)}
+@media (max-width:460px){
+  .layout{padding:0}
+  .phone{width:100vw;height:100dvh;min-height:0;aspect-ratio:auto;border-radius:0;padding:0;box-shadow:none}
+  .phone::before{display:none}
+  .screen{border-radius:0}
 }
-canvas.stage{width:100%;height:380px;display:block;border-radius:12px;background:var(--bg)}
-.camcol{display:grid;gap:8px}
-.cam{position:relative;width:100%;aspect-ratio:4/3;background:#000;border-radius:12px;overflow:hidden}
-.cam video,.cam canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.cam video{transform:scaleX(-1)}
-.result{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
-.result div{border:1px solid var(--line);border-radius:12px;padding:10px 12px}
-.result div:first-child{border-color:var(--accent)}
-.result b{display:block;font-size:22px;font-variant-numeric:tabular-nums}
-label{font-size:14px}
-.devtitle{margin-bottom:14px}
-.devgrid{display:grid;gap:16px}
-.counts{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.scr{position:absolute;inset:0;display:flex;flex-direction:column;gap:12px;padding:62px 20px 22px;overflow-y:auto}
+.grow{flex:1}
+.bar{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;min-height:40px;flex:none}
+.bar .back{width:40px;height:40px;padding:0;border-radius:50%;font-size:22px;line-height:1}
+.dots{display:flex;gap:6px;justify-content:center;align-items:center}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--accent);width:20px;border-radius:4px}
+.ttl{font-size:24px;font-weight:600;line-height:1.3}
+.sub{color:var(--muted);font-size:14px}
+.brand{font-weight:600;font-size:18px;color:var(--accent)}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;background:var(--good);color:#fff;font-size:12px;font-weight:600}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.between{display:flex;justify-content:space-between;align-items:center}
+
+/* 처음(홈) */
+#s-home{padding-bottom:0;gap:10px}
+.hhead{display:flex;justify-content:space-between;align-items:center;flex:none}
+.streak{display:inline-flex;align-items:baseline;gap:3px;color:var(--accent);font-weight:600}
+.streak svg{width:20px;height:20px;align-self:center}
+.streak b{font-size:26px;line-height:1}
+.streak span{font-size:13px}
+#homeChar{flex:1 1 140px;min-height:140px;width:100%}
+.today{flex:none;display:flex;align-items:center;gap:14px;padding:10px 14px;border-radius:18px;border:1.5px solid var(--line);background:var(--panel)}
+.today b{font-size:17px}
+.slots{display:flex;gap:6px;flex:1}
+.slot{display:grid;justify-items:center;color:var(--line)}
+.slot svg{width:34px;height:34px}
+.slot.done{color:var(--fg)}
+.pack{flex:none;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);padding:0 4px}
+.pack svg{width:18px;height:18px;flex:none}
+.linkbtn{border:0;background:none;padding:4px 8px;color:var(--muted);font-size:13px;font-weight:500;text-decoration:underline;text-underline-offset:3px}
+.tabs{flex:none;display:grid;grid-template-columns:repeat(4,1fr);margin:0 -20px;padding:6px 8px 14px;border-top:1px solid var(--line);background:var(--panel)}
+.tabs button{border:0;background:none;display:grid;justify-items:center;gap:2px;padding:6px 0;font-size:12px;font-weight:500;color:var(--muted);border-radius:12px}
+.tabs button svg{width:24px;height:24px}
+.tabs button.on{color:var(--accent);font-weight:600}
+.tabs button:disabled{opacity:1;cursor:default}
+.tabs button:disabled:active{transform:none}
+/* 처음: 내 단계 */
+.chip{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;text-align:left;padding:10px 14px;border-radius:18px;border:1.5px solid var(--line);background:var(--panel);flex:none}
+.chip svg{width:34px;height:34px;display:block}
+.chip small{display:block;color:var(--muted);font-size:12px;font-weight:500}
+.chip b{font-size:17px}
+
+/* 카메라: 화면마다 크기 · 자리가 바뀜 */
+#camBox{position:absolute;z-index:10;overflow:hidden;background:#000}
+#camBox video,#camBox canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#camBox video{transform:scaleX(-1)}
+#camBox.cam-off{top:0;left:0;width:2px;height:2px;opacity:0;pointer-events:none}
+#camBox.cam-big{inset:0;border-radius:22px}
+#camBox.cam-pip{top:96px;right:16px;width:78px;height:78px;border-radius:20px}
+#camOverlay{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:64px;font-weight:600;pointer-events:none}
+.camspace{width:100%;aspect-ratio:4/3;flex:none;border-radius:22px;background:var(--line);display:grid;place-content:center;justify-items:center;gap:8px;color:var(--muted);font-size:14px;font-weight:600}
+.camspace{position:relative;place-content:stretch}
+.camspace canvas{position:absolute;inset:0;width:100%;height:100%}
+.camrow{flex:none;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:16px;border:1.5px solid var(--line);background:var(--panel);font-weight:600}
+.camrow svg{width:22px;height:22px}
+.camrow b{margin-left:auto;color:var(--muted);font-size:14px}
+.camrow b.on{color:var(--good)}
+.sw{position:relative;width:52px;height:30px;padding:0;border-radius:15px;border:0;background:var(--line);flex:none}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:left .15s}
+.sw[aria-checked=true]{background:var(--good)}
+.sw[aria-checked=true]::after{left:25px}
+
+/* 모드: 카드 안에서 바로 시연 */
+.mcard{display:grid;gap:10px;text-align:left;padding:12px 12px 14px;border-radius:22px;border:2px solid var(--line);background:var(--panel)}
+.mcard[aria-pressed=true]{border-color:var(--accent)}
+.mcard canvas{width:100%;height:132px;display:block;border-radius:14px;background:var(--bg)}
+.mcard b{font-size:19px;display:block}
+.mcard small{color:var(--muted);font-weight:500;font-size:13px}
+/* 세는 기준 */
+.sensbox{display:grid;gap:8px;padding:10px 12px;border-radius:14px;background:var(--bg)}
+.senslv{display:flex;gap:5px;justify-content:center}
+.senslv i{width:26px;height:8px;border-radius:4px;background:var(--line)}
+.senslv i.on{background:var(--accent)}
+/* 난이도 설명 */
+.lmeta{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:4px;font-size:13px;font-weight:500}
+.lmeta span{opacity:.85}
+.lbar{display:flex;gap:3px;margin-top:6px}
+.lbar i{width:22px;height:6px;border-radius:3px;background:currentColor;opacity:.2}
+.lbar i.on{opacity:1}
+
+/* 카드 */
+.cards{display:grid;gap:10px}
+.card{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;text-align:left;padding:14px 16px;border-radius:20px;border:2px solid var(--line);background:var(--panel)}
+.card[aria-pressed=true]{border-color:var(--accent)}
+.card b{font-size:19px;display:block}
+.card small{color:var(--muted);font-weight:500;font-size:13px}
+.card .go{color:var(--muted);font-size:20px}
+.modeart{width:64px;height:64px;border-radius:16px;display:grid;place-items:center;background:var(--bg);color:var(--accent)}
+.modeart svg{width:46px;height:46px}
+.pop{animation:pop .32s ease}
+@keyframes pop{}
+
+/* 곡 고르기: 화면 가득 카드, 넘기며 듣기 */
+#s-song{padding:62px 14px 14px;gap:8px;overflow:hidden}
+.deck{position:relative;flex:1;min-height:0}
+.scard{position:absolute;inset:0;border-radius:30px;padding:18px 20px 18px;display:flex;flex-direction:column;gap:4px;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.scard{color:#fff;background:var(--cardbg)}
+.scard .top{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600}
+.scard .pill{padding:4px 10px;border-radius:999px;border:1.5px solid currentColor}
+.scard .art{flex:1;min-height:0;display:grid;place-items:center;padding:6px 0}
+.scard .art svg{width:76%;height:100%;max-height:260px;overflow:visible}
+.scard .tag{font-size:13px;font-weight:600;opacity:.75}
+.scard .nm{font-size:34px;font-weight:600;line-height:1.2}
+.scard .by{opacity:.75;font-size:15px}
+.scard .eq{display:flex;gap:4px;align-items:flex-end;height:22px;margin:4px 0 6px}
+.scard .eq i{width:5px;background:currentColor;border-radius:3px;height:30%;animation:eq .8s ease-in-out infinite}
+.scard .eq i:nth-child(2){animation-delay:.15s}.scard .eq i:nth-child(3){animation-delay:.3s}.scard .eq i:nth-child(4){animation-delay:.45s}.scard .eq i:nth-child(5){animation-delay:.6s}
+@keyframes eq{0%,100%{height:25%}50%{height:100%}}
+.scard .sdots{display:flex;gap:5px;margin-bottom:10px}
+.scard .sdots i{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.3}
+.scard .sdots i.on{opacity:1;width:18px;border-radius:4px}
+.scard .ok{border:none;font-size:18px;padding:15px 20px;width:100%;border-radius:16px}
+.scard .ok{background:#fff;color:#16171a}
+.nav{position:absolute;top:40%;z-index:4;width:44px;height:44px;padding:0;border-radius:50%;font-size:22px;line-height:1;border:none;background:rgba(255,255,255,.9);color:#111}
+.nav.l{left:8px}.nav.r{right:8px}
+.in-r{animation:inR .34s cubic-bezier(.2,.9,.3,1.15)}
+.in-l{animation:inL .34s cubic-bezier(.2,.9,.3,1.15)}
+.out-l{animation:outL .28s ease-in forwards;pointer-events:none}
+.out-r{animation:outR .28s ease-in forwards;pointer-events:none}
+@keyframes inR{from{transform:translateX(40%);opacity:0}}
+@keyframes inL{from{transform:translateX(-40%);opacity:0}}
+@keyframes outL{to{transform:translateX(-40%);opacity:0}}
+@keyframes outR{to{transform:translateX(40%);opacity:0}}
+.scard.picked{animation:picked .5s ease}
+@keyframes picked{}
+
+/* 난이도 */
+.lcard{display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:center;text-align:left;padding:14px 16px;border-radius:20px;border:2px solid var(--line);background:var(--panel);transition:background .15s,color .15s}
+.lcard[aria-pressed=true]{border-color:var(--accent);background:var(--accent);color:#fff}
+.lcard b{font-size:19px;display:block}
+.lcard small{font-weight:500;font-size:13px;opacity:.7}
+.lv{width:60px;height:60px;border-radius:50%;border:3px solid currentColor;display:grid;place-items:center;text-align:center;font-size:26px;font-weight:600;line-height:1}
+.lv small{display:block;font-size:10px;font-weight:600;opacity:1}
+.grid8{display:flex;gap:4px;margin-top:6px}
+.grid8 i{width:12px;height:12px;border-radius:50%;border:1.5px solid currentColor;opacity:.5;transition:transform .08s}
+.grid8 i.on{background:currentColor;opacity:1}
+.grid8 i.hit{transform:scale(1.6)}
+
+/* 한 판 */
+#s-play{padding:0}
+#stage{position:absolute;inset:0;width:100%;height:100%;display:block}
+.playctl{position:absolute;left:20px;right:20px;bottom:22px;display:grid;gap:8px;z-index:5}
+.playctl .row{justify-content:center}
+.close{position:absolute;top:56px;left:14px;z-index:6;width:36px;height:36px;padding:0;border-radius:50%;font-size:18px}
+
+/* 결과: 단계 · 곡과 레벨 · 점수만 */
+.res{display:grid;gap:6px;justify-items:center;text-align:center;margin-top:28px}
+.score{display:flex;align-items:baseline;gap:4px}
+.score b{font-size:76px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-0.04em}
+.score span{font-size:22px;font-weight:600}
+.resrows{display:grid;gap:8px;width:100%;margin-top:22px}
+.resrows div{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-radius:16px;background:var(--panel);border:1px solid var(--line)}
+.resrows small{color:var(--muted);font-size:14px}
+.resrows span{display:flex;gap:8px;align-items:center;font-weight:600;font-size:17px}
+.resrows svg{width:26px;height:26px}
+
+/* 666 */
+#s-six{gap:8px}
+#sixStage{flex:1;min-height:0;width:100%;display:block}
+
+/* 준비: 씹기 확인 */
+.check{display:grid;gap:10px;padding:14px;border-radius:18px;background:var(--panel);border:1px solid var(--line)}
+.chewdots{display:flex;gap:10px;justify-content:center}
+.chewdots i{width:22px;height:22px;border-radius:50%;border:2px solid var(--muted)}
+.chewdots i.on{background:var(--good);border-color:var(--good)}
+.meter{position:relative;height:16px;border-radius:8px;background:var(--line);overflow:hidden}
+.meter i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);width:0}
+.meter b{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--fg)}
+.rule svg{width:100%;height:auto;color:var(--fg)}
+
+/* 오른쪽 안내 */
+.side{display:grid;gap:16px;align-content:start;max-width:420px;width:100%}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px}
+.flow{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:4px;counter-reset:f}
+.flow li{counter-increment:f;display:grid;grid-template-columns:26px 1fr;gap:8px;align-items:start;padding:6px 8px;border-radius:10px;color:var(--muted)}
+.flow li::before{content:counter(f);display:grid;place-items:center;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);font-size:12px;font-weight:600}
+.flow li.done{color:var(--fg)}
+.flow li.done::before{content:'✓';background:var(--good);border-color:var(--good);color:#fff}
+.flow li.now{background:var(--bg);color:var(--fg);font-weight:600}
+.flow li.now::before{background:var(--accent);border-color:var(--accent);color:#fff}
+.flow small{display:block;font-weight:400;color:var(--muted)}
+details summary{cursor:pointer;font-weight:600}
+.devgrid{display:grid;gap:14px;margin-top:12px}
+.counts{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
 .count{border:1px solid var(--line);border-radius:10px;padding:8px 10px}
-.count b{display:block;font-size:24px;font-variant-numeric:tabular-nums;line-height:1.2}
+.count b{display:block;font-size:22px;font-variant-numeric:tabular-nums;line-height:1.2}
 .count small{color:var(--muted)}
 .count.sel{border-color:var(--accent)}
-.verdict{font-weight:600}
-canvas.graph{width:100%;height:180px;display:block}
-.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted)}
+canvas.graph{width:100%;height:150px;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--muted)}
 .legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:5px;border-radius:2px}
+select{font:inherit;padding:7px 9px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--fg)}
+.status{font-size:13px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.in-r,.in-l,.out-l,.out-r,.pop,.scard.picked{animation:none}.scard .eq i{animation:none;height:60%}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="hero">
-    <p class="eyebrow">졸업 프로젝트 · 씹기 리듬게임 프로토타입</p>
-    <h1>씹는 능력을 재고 기르는 저작 운동 브랜드</h1>
-    <p class="lead">웹캠이 턱과 입술의 움직임을 읽어요. 박자에 맞춰 씹으면 점수가 올라가요. (플레이 타임: 20초)</p>
-    <p class="muted small">영상은 이 컴퓨터 안에서만 처리되고 어디에도 저장되지 않아요.</p>
-  </header>
+<div class="layout">
+<div class="phone">
+<div class="screen" id="screen">
+  <div id="camBox" class="cam-off"><video id="video" playsinline muted></video><canvas id="avatar" width="240" height="180" hidden></canvas><div id="camOverlay"></div></div>
 
-  <section class="card">
-    <ol class="steps3">
-      <li id="st1"><span class="num">카메라 켜기</span><span>창이 뜨면 카메라 사용을 허용해 주세요.</span><button id="startBtn" class="primary">카메라 켜기</button></li>
-      <li id="st2"><span class="num">얼굴 인식 준비</span><span>얼굴을 화면 가운데에 두고, 입을 다문 채 5초 동안 가만히 있어 주세요.</span><button id="calBtn" disabled>준비하기</button><span id="calInfo" class="status"></span></li>
-      <li id="st3"><span class="num">게임 시작</span><span>젤리나 껌을 입에 넣고, 아래에서 게임을 골라 [시작]을 눌러요.</span></li>
-    </ol>
-    <p id="status" class="status" style="margin-top:12px">먼저 [카메라 켜기]를 눌러 주세요.</p>
+  <!-- 처음 (홈): IA 홈 = 연속 일수 · 오늘 칸 · 내 단계 · 다음 팩. 할 일은 버튼 하나 -->
+  <section class="scr" id="s-home">
+    <div class="hhead">
+      <span class="brand">꼭꼭 한 판</span>
+      <span class="streak" id="streak"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-3-1-6 1-9.5z" fill="currentColor"/></svg><b id="streakN">0</b><span>일 연속</span></span>
+    </div>
+    <h1 class="ttl" id="homeTitle">오늘도 꼭꼭</h1>
+    <canvas id="homeChar"></canvas>
+    <div class="today">
+      <b>오늘</b><div class="slots" id="slots"></div><span class="small muted" id="todayTxt">0 / 3</span>
+    </div>
+    <button id="stageChip" class="chip" aria-label="내 단계"><span id="stageIcon"></span><b id="stageName"></b><b id="stageTarget"></b></button>
+        <button id="homeStart" class="primary big wide">점심 한 판 시작</button>
+    <button id="homeMore" class="linkbtn" hidden>한 판 더</button>
+    <nav class="tabs" id="tabs">
+      <button class="on" data-tab="home"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z" fill="currentColor"/></svg>홈</button>
+      <button data-tab="log" disabled><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 10h16M9 3v4M15 3v4" stroke="currentColor" stroke-width="2"/></svg>기록</button>
+      <button data-tab="perk" disabled><svg viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M12 9v11M12 9c-2-4-6-4-6-1s6 1 6 1 6 2 6-1-4-3-6 1" fill="none" stroke="currentColor" stroke-width="2"/></svg>혜택</button>
+      <button data-tab="me" disabled><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 21c1-5 15-5 16 0" fill="none" stroke="currentColor" stroke-width="2"/></svg>내 정보</button>
+    </nav>
   </section>
 
-  <section class="card game">
-    <div class="row">
-      <label for="mode">게임</label>
-      <select id="mode"><option value="follow">따라 하기</option><option value="fall">박자 맞추기</option></select>
-      <label for="bpm">속도 (BPM)</label>
-      <select id="bpm"><option value="40">아주 느리게 (40)</option><option value="60" selected>느리게 (60)</option><option value="90">보통 (90)</option><option value="110">빠르게 (110)</option></select>
-      <label class="row"><input type="checkbox" id="music" checked> 배경 음악</label>
-      <button id="playBtn" class="primary" disabled>시작</button>
-      <button id="stopBtn" disabled>그만하기</button>
+  <!-- 준비 -->
+  <section class="scr" id="s-setup" hidden>
+    <div class="bar"><button class="back" data-go="home" aria-label="뒤로">‹</button><span style="text-align:center;font-weight:600">준비</span><span></span></div>
+    <div class="camspace" id="camspace"><canvas id="meChar"></canvas></div>
+    <div class="camrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3l2-2h6l2 2h3v12H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>카메라<b id="camState">꺼짐</b><button id="camSw" class="sw" role="switch" aria-checked="false" aria-label="카메라 켜기 · 끄기"></button></div>
+    <div id="setupA" style="display:grid;gap:10px">
+      <figure class="rule" style="margin:0;display:grid;gap:6px">
+        <b>턱이나 아랫입술이 내려갔다 올라오면 한 번</b>
+        <svg viewBox="0 0 420 150" role="img" aria-label="다문 턱, 내려간 턱, 다시 닫힌 턱 세 장면을 합쳐 한 번으로 셉니다">
+          <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+            <path d="M30 70 a40 40 0 0 1 80 0 v8 a40 34 0 0 1 -80 0z"/><path d="M58 92 q12 6 24 0"/>
+            <path d="M170 70 a40 40 0 0 1 80 0 v8 a40 46 0 0 1 -80 0z"/><path d="M198 102 q12 6 24 0"/>
+            <path d="M310 70 a40 40 0 0 1 80 0 v8 a40 34 0 0 1 -80 0z"/><path d="M338 92 q12 6 24 0"/>
+            <path d="M126 80 h28 M146 72 l8 8 -8 8 M266 80 h28 M286 72 l8 8 -8 8" stroke-width="2.5" opacity=".5"/>
+          </g>
+          <g fill="currentColor"><circle cx="56" cy="64" r="4"/><circle cx="84" cy="64" r="4"/><circle cx="196" cy="64" r="4"/><circle cx="224" cy="64" r="4"/><circle cx="336" cy="64" r="4"/><circle cx="364" cy="64" r="4"/></g>
+          <g fill="currentColor" font-family="Pretendard, sans-serif" font-size="15" text-anchor="middle" letter-spacing="-0.3"><text x="70" y="140">다문 입</text><text x="210" y="140">내려감 ↓</text><text x="350" y="140">올라옴 ↑ = 1번</text></g>
+        </svg>
+        <p class="sub">턱 · 아랫입술 · 입꼬리 움직임을 함께 봐서, 입을 다물고 씹어도 세어져요.</p>
+      </figure>
+      <button id="camBtn" hidden>카메라 켜기</button>
     </div>
-    <p class="muted small" id="soundHint">휴대폰에서 소리가 안 나면 무음 모드를 꺼 주세요.</p>
-    <p id="modeDesc" class="muted">캐릭터가 네 번 먼저 씹으면, 이어서 네 번 따라 씹어요. 캐릭터 입이 닫히는 순간이 박자예요.</p>
-    <div class="gamegrid">
-      <canvas id="stage" class="stage"></canvas>
-      <div class="camcol">
-        <div class="cam">
-          <video id="video" playsinline muted></video>
-          <canvas id="avatar" width="400" height="300" hidden></canvas>
-        </div>
-        <label class="row"><input type="checkbox" id="hideFace"> 내 얼굴 대신 캐릭터로 보기</label>
-        <p class="muted small">화면에 내 얼굴이 나오는 게 불편한 분을 위한 기능이에요. 얼굴은 가려져도 씹는 움직임은 그대로 인식돼요.</p>
+    <div id="setupB" hidden style="display:grid;gap:6px;text-align:center">
+      <b style="font-size:20px" id="calTitle">입을 다문 채 가만히</b>
+      <p class="sub" id="calSub">가만히 있을 때의 작은 흔들림을 재요. 5초면 끝나요.</p>
+    </div>
+    <div id="setupC" hidden class="check">
+      <b style="font-size:18px;text-align:center">입을 다문 채 3번 씹어 보세요</b>
+      <div class="chewdots" id="chewDots"><i></i><i></i><i></i></div>
+      <div><div class="between tiny muted"><span>턱 · 입술 움직임</span><span>막대가 선을 넘었다 돌아오면 1번</span></div><div class="meter" id="meter"><i></i><b></b></div></div>
+      <p class="sub" id="checkTip" style="text-align:center">구미 없이 빈 입으로 해도 돼요.</p>
+      <div class="sensbox" id="sensRow">
+        <div class="between small"><b>세는 기준</b><span id="sensName" class="muted"></span></div>
+        <div class="senslv" id="sensLv"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="row" style="justify-content:center"><button id="sensUp">살살 씹어도 세기</button><button id="sensDown">꾹 씹을 때만 세기</button></div>
+        <p class="tiny muted" style="text-align:center">안 세지면 왼쪽, 가만있는데도 세지면 오른쪽을 눌러요</p>
+      </div>
+      <div class="row" style="justify-content:center"><button id="recal">처음부터 다시 재기</button></div>
+      <button id="checkNext" class="primary wide" hidden>다음</button>
+    </div>
+    <p id="status" class="status" style="text-align:center"></p>
+    <button id="noCamBtn" class="primary wide">카메라 없이 하기</button>
+  </section>
+
+  <!-- 1 모드 -->
+  <section class="scr" id="s-mode" hidden>
+    <div class="bar"><button class="back" data-go="song" aria-label="뒤로">‹</button><div class="dots"><i></i><i class="on"></i><i></i></div><span></span></div>
+    <h2 class="ttl">어떻게 놀까요?</h2>
+    <div class="cards" id="modeOpts"></div>
+  </section>
+
+  <!-- 2 곡 -->
+  <section class="scr" id="s-song" hidden>
+    <div class="bar"><button class="back" data-go="home" aria-label="뒤로">‹</button><div class="dots"><i class="on"></i><i></i><i></i></div><span></span></div>
+    <div class="deck" id="deck">
+      <button class="nav l" id="songPrev" aria-label="이전 곡">‹</button>
+      <button class="nav r" id="songNext" aria-label="다음 곡">›</button>
+    </div>
+  </section>
+
+  <!-- 3 난이도 -->
+  <section class="scr" id="s-level" hidden>
+    <div class="bar"><button class="back" data-go="mode" aria-label="뒤로">‹</button><div class="dots"><i></i><i></i><i class="on"></i></div><span></span></div>
+    <h2 class="ttl">난이도를 골라요</h2>
+    <p class="sub" id="levelSub"></p>
+    <div class="cards" id="levelOpts"></div>
+    <div class="grow"></div>
+    <button id="levelGo" class="primary big wide">시작!</button>
+  </section>
+
+  <!-- 한 판 -->
+  <section class="scr" id="s-play" hidden>
+    <canvas id="stage" aria-label="게임 화면"></canvas>
+    <button class="close" id="quitBtn" aria-label="그만하기">✕</button>
+    <div class="playctl">
+      <p id="askHint" class="sub" style="text-align:center;background:var(--panel);border-radius:12px;padding:8px" hidden></p>
+      <div class="row">
+        <button id="goBtn" class="big">씹기 전에 바로 시작</button>
+        <button id="doneBtn" class="primary big" hidden>다 먹었어요</button>
+        <button id="notYetBtn" class="big" hidden>아직이요</button>
       </div>
     </div>
-    <div id="result" class="result" hidden></div>
   </section>
 
-  <section class="card dev">
-    <h2 class="devtitle">씹기 인식 원리</h2>
-      <p class="muted" style="margin:-6px 0 4px;max-width:70ch">코끝과 턱 끝 사이가 잠깐 멀어졌다 돌아오면 한 번 씹은 걸로 세요. 입을 다물고 씹어도 턱은 위아래로 움직이기 때문이에요. 처음 5초는 가만히 있을 때의 작은 흔들림을 재서, 그걸 씹기로 잘못 세지 않게 해요.</p>
+  <!-- 결과 -->
+  <section class="scr" id="s-result" hidden>
+    <div class="res">
+      <span class="sub" style="font-weight:600">한 판 완주!</span>
+      <div class="score"><b id="resScore">0</b><span>점</span></div>
+    </div>
+    <div class="resrows">
+      <div><small>내 젤리 단계</small><span id="resStage"></span></div>
+      <div><small>곡 · 레벨</small><span id="resSong"></span></div>
+    </div>
+    <div class="grow"></div>
+    <button id="shareBtn" class="primary wide big">친구에게 자랑하기</button>
+    <div class="row" style="justify-content:center"><button id="toSixBtn">666 풀기로</button><button id="againBtn">한 판 더</button></div>
+    <p id="resInfo" class="status" style="text-align:center"></p>
+  </section>
+
+  <!-- 666 풀기: 같은 캐릭터가 알려 줌 -->
+  <section class="scr" id="s-six" hidden>
+    <div class="between"><b style="font-size:20px">666 풀기</b><button id="sixSkip">건너뛰기</button></div>
+    <canvas id="sixStage" aria-label="캐릭터가 혀끝을 윗앞니 뒤에 붙이고 6초 버티는 방법을 보여 줍니다"></canvas>
+    <p id="sixInfo" class="sub" style="text-align:center">곧 시작해요.</p>
+    <button id="sixHome" class="primary wide" hidden>처음으로</button>
+  </section>
+</div>
+</div>
+
+<aside class="side">
+  <div class="panel">
+    <b>한 판 흐름</b>
+    <ol class="flow" id="flow">
+      <li data-k="setup"><span>준비<small>카메라 켜기 · 가만히 5초 · 3번 씹어 보기</small></span></li>
+      <li data-k="song"><span>곡<small>화면 가득 카드, 넘기면서 미리 듣기</small></span></li>
+      <li data-k="mode"><span>모드<small>따라 하기 · 내가 맞추기 (곡은 계속 흐름)</small></span></li>
+      <li data-k="level"><span>난이도<small>한 번 누르면 박자 들려주기, 한 번 더 누르면 시작</small></span></li>
+      <li data-k="chew"><span>씹기<small>두 번 씹으면 노래 시작 · 연속으로 맞추면 점수 ×1.5 · ×2 · ×3</small></span></li>
+      <li data-k="swallow"><span>"40번 다 채웠어요!"<small>내 단계 횟수를 채우면 알려 주기만 함 (삼키라고 하지 않음)</small></span></li>
+      <li data-k="ask"><span>"다 드셨어요?"<small>3초 동안 안 씹으면 · 끄덕 · 버튼 · 말로 끝</small></span></li>
+      <li data-k="result"><span>결과<small>내 단계 · 곡과 레벨 · 점수</small></span></li>
+      <li data-k="six"><span>666 풀기<small>캐릭터를 따라 혀끝을 윗앞니 뒤에 6초 × 6번</small></span></li>
+    </ol>
+    <p class="tiny muted" style="margin-top:10px">구미 단계는 측정 껌으로 정해 두고 4주마다 다시 재요. 판마다 고르지 않아요. 시연에서는 처음 화면의 '내 단계'를 눌러 바꿔요.</p>
+  </div>
+  <details class="panel" id="dev">
+    <summary>개발용 · 씹기 인식 상세</summary>
     <div class="devgrid">
+      <p class="muted small">스페이스바를 누르면 씹기 한 번으로 세요 (카메라가 잘 안 될 때 시연 보조).</p>
+      <label class="row small"><input type="checkbox" id="hideFace"> 내 얼굴 대신 캐릭터로 보기</label>
       <div style="display:grid;gap:8px">
-        <h2>10번 씹기 테스트</h2>
-        <p class="muted">입을 다물고 10번 씹어 보세요. 다섯 가지 방법 중 10에 가장 가깝게 센 방법이 게임에 쓰여요.</p>
+        <b>10번 씹기 테스트</b>
+        <p class="muted small">입을 다물고 10번 씹어 보세요. 여섯 방법 중 10에 가장 가깝게 센 방법이 게임에 쓰여요.</p>
         <div class="row"><button id="countBtn" disabled>세기 시작</button><button id="countStop" disabled>멈추고 결과 보기</button></div>
         <div class="counts">
-          <div class="count" data-i="0"><small>입술+턱 합산</small><b id="c0">0</b><small id="r0">둘을 합쳐 잡음을 줄임</small></div>
-          <div class="count" data-i="1"><small>아랫입술 위치</small><b id="c1">0</b><small id="r1">코끝 ~ 아랫입술</small></div>
+          <div class="count" data-i="0"><small>종합</small><b id="c0">0</b><small id="r0">일곱 가지를 합쳐서</small></div>
+          <div class="count" data-i="1"><small>아랫입술 아래</small><b id="c1">0</b><small id="r1">코끝 ~ 입술 아래</small></div>
           <div class="count" data-i="2"><small>턱 위치</small><b id="c2">0</b><small id="r2">미간 ~ 턱 끝</small></div>
           <div class="count" data-i="3"><small>입술 간격</small><b id="c3">0</b><small id="r3">입을 벌려야 커짐</small></div>
           <div class="count" data-i="4"><small>턱 벌림</small><b id="c4">0</b><small id="r4">입을 벌려야 커짐</small></div>
+          <div class="count" data-i="5"><small>아랫입술만</small><b id="c5">0</b><small id="r5">코끝 ~ 아랫입술 안쪽</small></div>
         </div>
-        <p id="countVerdict" class="verdict"></p>
+        <p id="countVerdict" class="small" style="font-weight:600"></p>
       </div>
-      <div class="row">
-        <label for="sigSel">판정에 쓸 신호</label>
-        <select id="sigSel"><option value="0">입술+턱 합산</option><option value="1">아랫입술 위치</option><option value="2">턱 위치</option><option value="3">입술 간격</option><option value="4">턱 벌림</option></select>
-        <label for="win">판정 범위</label>
-        <select id="win"><option value="150">±0.15초</option><option value="250" selected>±0.25초</option><option value="350">±0.35초</option></select>
+      <div class="row small">
+        <label for="sigSel">판정 신호</label>
+        <select id="sigSel"><option value="0">종합 (여러 움직임)</option><option value="1">아랫입술 아래</option><option value="2">턱 위치</option><option value="3">입술 간격</option><option value="4">턱 벌림</option><option value="5">아랫입술만</option></select>
+        <span id="winInfo" class="status"></span>
       </div>
-      <div class="row">
+      <div class="row small">
         <label for="sens">민감도</label>
-        <input type="range" id="sens" min="0.5" max="6" step="0.25" value="2">
-        <span id="sensVal" class="status">잡음의 2배를 넘으면 씹기로 인정</span>
+        <input type="range" id="sens" min="0.5" max="5" step="0.25" value="1.25">
+        <span id="sensVal" class="status"></span>
       </div>
-      <div style="display:grid;gap:8px">
-        <h2>실시간 신호 (최근 6초)</h2>
+      <p id="nodInfo" class="status">끄덕임: -</p>
+      <div style="display:grid;gap:6px">
+        <b>실시간 신호 (최근 6초)</b>
         <canvas id="graph" class="graph"></canvas>
         <div class="legend">
-          <span><i style="background:var(--s1)"></i>입술+턱 합산</span>
-          <span><i style="background:var(--s2)"></i>아랫입술 위치</span>
-          <span><i style="background:var(--s3)"></i>턱 위치</span>
-          <span><i style="background:var(--s4)"></i>입술 간격</span>
-          <span><i style="background:var(--s5)"></i>턱 벌림</span>
-          <span>세로 막대 = 씹기로 센 순간 · 점선 = 씹어야 할 박자</span>
+          <span><i style="background:var(--s0)"></i>아무 쪽</span><span><i style="background:var(--s1)"></i>입술 아래</span><span><i style="background:var(--s2)"></i>턱</span><span><i style="background:var(--s3)"></i>입술 간격</span><span><i style="background:var(--s4)"></i>턱 벌림</span><span><i style="background:var(--s5)"></i>아랫입술만</span>
+          <span>세로 막대 = 센 순간 · 점선 = 맞출 박자</span>
         </div>
       </div>
     </div>
-  </section>
+  </details>
+</aside>
 </div>
 
 <script type="module">
@@ -173,146 +451,839 @@ const WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm'
 const MODEL = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
 const $ = id => document.getElementById(id);
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-
-const video = $('video');
-let landmarker = null, lastVideoTime = -1, lastT = null;
-
-// ---- 신호 5종: 0 = 1번과 2번을 합친 값, 1~4 = 얼굴 점에서 직접 잰 값 ----
-const SIG = [0,1,2,3,4].map(i => ({sm:null, base:null, sd:null, state:'low', lastEv:0, count:0, peaks:[]}));
-const hist = [];      // {t, v:[hp0,hp1,hp2]}
-const events = [];    // {t, i} 씹기로 센 순간
-let calibrating = null, counting = false;
-let latency = 0;      // 보정값(ms)
-
-function status(msg){ $('status').textContent = msg; }
-
-function dist(a, b, W, H){
-  return Math.hypot((a.x - b.x) * W, (a.y - b.y) * H, (a.z - b.z) * W);
+const store = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+// 캔버스 글자도 프리텐다드 자간 -2%
+function F(g, weight, size){
+  g.font = weight + ' ' + size + 'px ' + css('--font');
+  if ('letterSpacing' in g) g.letterSpacing = (-0.02 * size).toFixed(2) + 'px';
 }
 
+// ---- 단계 · 모드 · 난이도 ----
+// 단계는 측정 껌으로 정해 둔 값(판마다 고르지 않음). 목표 횟수는 추정값, 첫 판에서 세어 맞춤
+const STAGES = {
+  soft:   {name:'말랑', shape:'circle', target:30, color:'--soft'},
+  bouncy: {name:'탱글', shape:'heart',  target:40, color:'--bouncy'},
+  firm:   {name:'단단', shape:'star',   target:50, color:'--firm'},
+};
+const MODES = {
+  follow: {name:'따라 하기', desc:'캐릭터가 한 마디 먼저 씹으면, 이어서 따라 씹어요',
+    art:'<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="15" cy="22" r="11" fill="currentColor"/><circle cx="35" cy="26" r="9" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M10 36 h10 M30 40 h10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M26 12 l5 -4 l-1 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'},
+  match:  {name:'내가 맞추기', desc:'내려오는 구미가 입에 닿을 때 씹어요',
+    art:'<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="36" r="9" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="24" cy="10" r="5" fill="currentColor"/><circle cx="24" cy="22" r="3" fill="currentColor" opacity=".45"/></svg>'},
+};
+// 한 마디 = 4박. 쉬움 두 박에 한 번 · 보통 매 박 · 어려움 엇박까지
+const LEVELS = {
+  easy:   {name:'쉬움',   lv:2, who:'처음이라면', grid:[1,0,0,0,1,0,0,0], pat:o => [0, 2]},
+  normal: {name:'보통',   lv:4, who:'익숙해지면', grid:[1,0,1,0,1,0,1,0], pat:o => [0, 1, 2, 3]},
+  hard:   {name:'어려움', lv:6, who:'리듬게임을 좋아하면', grid:[1,0,1,1,1,0,1,1], pat:o => [0, 1, 1 + o, 2, 3, 3 + o]},
+};
+const SVG = {
+  circle: c => `<svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="24" fill="${c}"/></svg>`,
+  heart:  c => `<svg viewBox="0 0 60 60" aria-hidden="true"><path d="M30 52 C6 36 4 20 14 12 C22 6 29 11 30 17 C31 11 38 6 46 12 C56 20 54 36 30 52Z" fill="${c}"/></svg>`,
+  star:   c => `<svg viewBox="0 0 60 60" aria-hidden="true"><polygon points="30,4 37,22 56,23 41,35 46,54 30,43 14,54 19,35 4,23 23,22" fill="${c}"/></svg>`,
+};
+
+// ---- 음 ----
+function hz(n){
+  const m = /^([A-G])([#b]?)(\d)$/.exec(n);
+  const semi = {C:0, D:2, E:4, F:5, G:7, A:9, B:11}[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0);
+  return 440 * 2 ** ((12 * (Number(m[3]) + 1) + semi - 69) / 12);
+}
+// 'E5:1 D#5:1 r:2 C4+E4:4' → [{beat, notes, dur}] (unit = 한 박을 몇 칸으로 쪼갰는지)
+function seq(str, unit){
+  let beat = 0; const out = [];
+  str.replace(/\|/g, ' ').trim().split(/\s+/).forEach(tok => {
+    const [n, d] = tok.split(':'), dur = Number(d) / unit;
+    if (n !== 'r') out.push({beat, notes:n.split('+'), dur});
+    beat += dur;
+  });
+  out.len = beat;
+  return out;
+}
+// 트로트 반주: 박마다 쿵(베이스) · 짝(화음)
+const TROT_CH = {Am:['A2', 'E2', 'A3+C4+E4'], Dm:['D3', 'A2', 'D4+F4+A4'], E:['E2', 'B1', 'G#3+B3+E4']};
+const trotAcc = list => list.map((c, i) => TROT_CH[c][i % 2] + ':1 ' + TROT_CH[c][2] + ':1').join(' ');
+// 쿵 · 짝 · 쿵 · 짝 반주 (한 칸 = 4박)
+const CH = {Am:['A2', 'E3', 'A3+C4+E4'], G:['G2', 'D3', 'B3+D4'], C:['C3', 'G2', 'E4+G4'], C7:['C3', 'G2', 'E4+Bb4'], F:['F2', 'C3', 'F4+A4'], G7:['G2', 'D3', 'B3+F4'], A7:['A2', 'E3', 'C#4+G4'], D7:['D3', 'A2', 'F#4+C5']};
+const oom = list => list.map(c => `${CH[c][0]}:1 ${CH[c][2]}:1 ${CH[c][1]}:1 ${CH[c][2]}:1`).join(' | ');
+// 반 마디(2박)씩 쪼갠 반주: 한 칸 = 2박
+// 3/4박자 반주: 쿵 · 짝 · 짝 (한 칸 = 3박)
+const waltz = list => list.map(c => `${CH[c][0]}:1 ${CH[c][2]}:1 ${CH[c][2]}:1`).join(' | ');
+const oom2 = list => list.map(c => `${CH[c][0]}:1 ${CH[c][2]}:1`).join(' | ');
+
+// 곡 카드 그림 (흑백)
+const ART = {
+  rings:  '<circle cx="100" cy="100" r="88" fill="none" stroke="currentColor" stroke-width="6"/><circle cx="100" cy="100" r="62" fill="none" stroke="currentColor" stroke-width="6"/><circle cx="100" cy="100" r="36" fill="none" stroke="currentColor" stroke-width="6"/><circle cx="100" cy="100" r="12" fill="currentColor"/>',
+  keys:   [0,1,2,3,4,5,6].map(i => `<rect x="${12 + i * 25}" y="30" width="23" height="140" rx="4" fill="none" stroke="currentColor" stroke-width="4"/>`).join('') + [0,1,3,4,5].map(i => `<rect x="${28 + i * 25}" y="30" width="16" height="82" rx="3" fill="currentColor"/>`).join(''),
+  janggu: '<path d="M20 50 L92 88 V112 L20 150 Z M180 50 L108 88 V112 L180 150 Z" fill="currentColor"/><rect x="88" y="94" width="24" height="12" fill="currentColor"/><ellipse cx="20" cy="100" rx="10" ry="50" fill="none" stroke="currentColor" stroke-width="5"/><ellipse cx="180" cy="100" rx="10" ry="50" fill="none" stroke="currentColor" stroke-width="5"/>',
+  sun:    '<circle cx="100" cy="100" r="34" fill="currentColor"/>' + Array.from({length:16}, (_, i) => { const a = i * Math.PI / 8; return `<line x1="${100 + Math.cos(a) * 50}" y1="${100 + Math.sin(a) * 50}" x2="${100 + Math.cos(a) * (i % 2 ? 72 : 90)}" y2="${100 + Math.sin(a) * (i % 2 ? 72 : 90)}" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>`; }).join(''),
+  stripes:'<defs><clipPath id="cpS"><rect x="14" y="14" width="172" height="172" rx="26"/></clipPath></defs><g clip-path="url(#cpS)">' + Array.from({length:12}, (_, i) => `<line x1="${-60 + i * 30}" y1="200" x2="${40 + i * 30}" y2="0" stroke="currentColor" stroke-width="12"/>`).join('') + '</g><rect x="14" y="14" width="172" height="172" rx="26" fill="none" stroke="currentColor" stroke-width="5"/>',
+  mic:    '<circle cx="100" cy="66" r="44" fill="currentColor"/><path d="M70 56 h60 M66 72 h68 M74 88 h52" style="stroke:var(--cardbg)" stroke-width="4"/><rect x="88" y="110" width="24" height="64" rx="10" fill="currentColor"/>' + [[30, 40], [170, 60], [36, 150], [166, 156]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="9" fill="currentColor"/><path d="M${x + 8} ${y} V${y - 30} l12 6" fill="none" stroke="currentColor" stroke-width="4"/>`).join(''),
+  flower: Array.from({length:6}, (_, i) => `<ellipse cx="100" cy="52" rx="26" ry="44" fill="currentColor" opacity="${i % 2 ? .55 : 1}" transform="rotate(${i * 60} 100 100)"/>`).join('') + '<circle cx="100" cy="100" r="22" style="fill:var(--cardbg)"/><circle cx="100" cy="100" r="12" fill="currentColor"/>',
+  checker:Array.from({length:25}, (_, i) => (i + Math.floor(i / 5)) % 2 ? '' : `<rect x="${16 + (i % 5) * 34}" y="${16 + Math.floor(i / 5) * 34}" width="34" height="34" fill="currentColor"/>`).join('') + '<rect x="16" y="16" width="170" height="170" fill="none" stroke="currentColor" stroke-width="5"/>',
+  stars:  [[100, 74, 46], [44, 140, 24], [158, 146, 30], [40, 44, 14], [166, 46, 16]].map(([x, y, r]) => `<polygon points="${Array.from({length:10}, (_, k) => { const a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? r * .42 : r; return (x + Math.cos(a) * rr).toFixed(1) + ',' + (y + Math.sin(a) * rr).toFixed(1); }).join(' ')}" fill="currentColor"/>`).join(''),
+  horn:   '<path d="M24 86 h86 l52 -42 v112 l-52 -42 h-86 z" fill="currentColor"/><rect x="40" y="66" width="10" height="20" rx="3" fill="currentColor"/><rect x="60" y="66" width="10" height="20" rx="3" fill="currentColor"/><rect x="80" y="66" width="10" height="20" rx="3" fill="currentColor"/><path d="M24 114 q40 34 86 0" fill="none" stroke="currentColor" stroke-width="6"/>',
+  banjo:  '<circle cx="78" cy="122" r="58" fill="none" stroke="currentColor" stroke-width="8"/><circle cx="78" cy="122" r="40" fill="currentColor"/><rect x="112" y="30" width="16" height="80" rx="5" transform="rotate(38 120 70)" fill="currentColor"/><rect x="148" y="12" width="30" height="26" rx="6" transform="rotate(38 163 25)" fill="currentColor"/>',
+  hat:    '<ellipse cx="100" cy="132" rx="88" ry="22" fill="currentColor"/><path d="M50 128 V72 q50 -18 100 0 V128 z" fill="currentColor"/><rect x="50" y="100" width="100" height="14" style="fill:var(--cardbg)"/>',
+  maracas:'<ellipse cx="66" cy="70" rx="34" ry="44" transform="rotate(-20 66 70)" fill="currentColor"/><rect x="74" y="104" width="14" height="70" rx="6" transform="rotate(-20 81 139)" fill="currentColor"/><ellipse cx="138" cy="74" rx="34" ry="44" transform="rotate(22 138 74)" fill="currentColor" opacity=".6"/><rect x="118" y="108" width="14" height="70" rx="6" transform="rotate(22 125 143)" fill="currentColor" opacity=".6"/><path d="M30 26 l10 10 M100 18 v14 M172 26 l-10 10" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>',
+  heart:  '<path d="M100 172 C36 128 18 88 40 58 C60 32 92 40 100 66 C108 40 140 32 160 58 C182 88 164 128 100 172Z" fill="currentColor"/>',
+  cake:   '<rect x="30" y="104" width="140" height="66" rx="10" fill="currentColor"/><path d="M30 126 q17 14 35 0 t35 0 t35 0 t35 0" fill="none" style="stroke:var(--cardbg)" stroke-width="6"/>' + [64, 100, 136].map(x => `<rect x="${x - 5}" y="62" width="10" height="38" rx="4" fill="currentColor"/><path d="M${x} 36 q10 12 0 20 q-10 -8 0 -20z" fill="currentColor"/>`).join(''),
+  wave:   '<path d="M70 92 l40 -34 l40 34 v36 h-80z" fill="currentColor"/><rect x="100" y="104" width="18" height="24" style="fill:var(--cardbg)"/>' + [140, 162, 184].map((y, i) => `<path d="M10 ${y} q22 -16 45 0 t45 0 t45 0 t45 0" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" opacity="${1 - i * .3}"/>`).join(''),
+  fate:   '<rect x="18" y="96" width="26" height="70" rx="6" fill="currentColor"/><rect x="58" y="96" width="26" height="70" rx="6" fill="currentColor"/><rect x="98" y="96" width="26" height="70" rx="6" fill="currentColor"/><rect x="140" y="20" width="42" height="146" rx="8" fill="currentColor"/><path d="M18 182 h164" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>',
+};
+
+// 곡: 공개된 옛 곡은 멜로디를 옮겨 쓰고, 나머지는 자체 작곡. 음원 파일 없이 브라우저가 만드는 소리
+const SONGS = {
+  omona: {
+    name:'어머나', by:'장윤정 · 윤명선 작곡', tag:'트로트', bpm:56, off:1 / 2, feel:'신나게', color:'#f76707', art:'heart',
+    // 4/4박자 반 마디 = 게임 한 박. 알토 색소폰 악보를 실제 음으로 내려 적음
+    mel: seq('F4:2 Eb4:2 F4:4 F4:2 Eb4:2 F4:4 | F4:1 F4:1 Eb4:2 F4:2 F#4:2 F4:4 r:4 | F4:2 F4:1 F4:1 Eb4:2 F4:2 F#4:4 r:4 | F4:2 Eb4:2 C#4:2 Eb4:2 F4:4 r:4 | F4:2 Eb4:2 F4:4 F4:1 F4:1 Eb4:2 F4:4 | F4:2 Eb4:2 F4:2 F#4:2 F4:4 r:4 | F#4:2 F4:2 Eb4:2 F4:2 F#4:4 r:2 C#4:1 C#4:1 | Eb4:4 F4:4 F4:4 C4:4 | Bb3:4 r:12 | Ab4:2 Ab4:2 Ab4:2 Bb4:2 C5:2 Bb4:2 Ab4:2 F#4:2 | F4:6 Eb4:2 F4:8 | r:2 F#4:2 F#4:2 Ab4:2 Bb4:2 F#4:2 F#4:2 F4:2', 8),
+    acc: seq('Bb2:1 Bb3+C#4+F4:1 | F2:1 Bb3+C#4+F4:1 | Bb2:1 Bb3+C#4+F4:1 | F2:1 Bb3+C#4+F4:1 | Bb2:1 Bb3+C#4+F4:1 | F2:1 Bb3+C#4+F4:1 | Bb2:1 Bb3+C#4+F4:1 | C3:1 A3+C4+Eb4:1 | Bb2:1 Bb3+C#4+F4:1 | F2:1 Bb3+C#4+F4:1 | Bb2:1 Bb3+C#4+F4:1 | F2:1 Bb3+C#4+F4:1 | Eb3:1 Eb4+F#4+Bb4:1 | Bb2:1 Eb4+F#4+Bb4:1 | F3:1 A3+C4+Eb4:1 | C3:1 A3+C4+Eb4:1 | Bb2:1 Bb3+C#4+F4:1 | F2:1 Bb3+C#4+F4:1 | Ab2:1 Ab3+C4+Eb4:1 | Eb3:1 Ab3+C4+Eb4:1 | C#3:1 C#4+F4+Ab4:1 | Ab2:1 C#4+F4+Ab4:1 | F#3:1 F#3+Bb3+C#4:1 | Bb2:1 Eb4+F#4+Bb4:1', 2),
+    voice:'trot', drums:'trot',
+  },
+  naai: {
+    name:'내 나이가 어때서', by:'오승근 · 정기수 작곡', tag:'트로트', bpm:64, off:1 / 2, feel:'신나게', color:'#c2185b', art:'mic',
+    // 4/4박자 반 마디(2분음표) = 게임 한 박, 16분음표 = 1
+    mel: seq('D5:16 | C5:8 Bb4:8 | C5:2 D5:2 D5:2 C5:2 Bb4:4 G4:2 Bb4:1 G4:1 | F4:8 r:8 | r:6 Bb4:2 Bb4:4 Bb4:2 C5:2 | r:2 D5:2 D5:2 D5:2 C5:4 D5:2 C5:1 Bb4:3 | Bb4:14 | r:16 | D4:4 F4:2 F4:4 F4:2 G4:2 F4:2 | F4:8 r:8 | G4:4 Bb4:2 Bb4:4 Bb4:2 C5:2 Bb4:2 | Bb4:10 C5:2 r:4 | C5:2 D5:2 D5:2 D5:2 D5:4 C5:2 Bb4:2 | r:2 Bb4:4 Bb4:2 Bb4:2 C5:2 C5:2 D5:1 C5:29 | r:4 | D5:4 D5:2 D5:4 D5:2 C5:2 D5:1 C5:3 | Bb4:10 r:4 | C5:2 D5:2 D5:2 C5:2 Bb4:4 G4:2 Bb4:1 G4:1 | F4:12 r:4 | r:4 Bb4:2 Bb4:4 Bb4:2 G4:4 | F4:4 G4:2 F4:4 D4:2 C4:2 D4:1 C4:3 | Bb3:10 r:4 | r:16', 8),
+    acc: seq('Bb2:1 D4+F4+Bb4:1 | F2:1 D4+F4+Bb4:1 | F2:1 A3+Eb4+F4:1 | D3:1 G3+Bb3+D4:1 | C3:1 C4+Eb4+G4:1 | Bb2:1 Eb4+G4+Bb4:1 | F2:1 A3+Eb4+F4:1 | C3:1 A3+Eb4+F4:1 | Bb2:1 D4+F4+Bb4:1 | F2:1 D4+F4+Bb4:1 | G2:1 G3+Bb3+D4:1 | C3:1 A3+Eb4+F4:1 | Bb2:1 D4+F4+Bb4:1 | F2:1 D4+F4+Bb4:1 | Bb2:1 D4+F4+Bb4:1 | F2:1 D4+F4+Bb4:1 | Bb2:1 D4+F4+Bb4:1 | F2:1 D4+F4+Bb4:1 | Bb2:1 D4+F4+Bb4:1 | F2:1 D4+F4+Bb4:1 | Eb3:1 Eb4+G4+Bb4:1 | Bb2:1 Eb4+G4+Bb4:1 | Eb3:1 Eb4+G4+Bb4:1 | Bb2:1 Eb4+G4+Bb4:1 | G2:1 G3+Bb3+D4:1 | D3:1 G3+Bb3+D4:1 | Eb3:1 Eb4+G4+Bb4:1 | Bb2:1 Eb4+G4+Bb4:1 | F2:1 A3+Eb4+F4:1 | C3:1 A3+Eb4+F4:1 | F2:1 A3+Eb4+F4:1 | C3:1 A3+Eb4+F4:1 | Bb2:1 D4+F4+Bb4:1 | F2:1 D4+F4+Bb4:1 | G2:1 G3+Bb3+D4:1 | D3:1 G3+Bb3+D4:1 | C3:1 Bb3+Eb4+G4:1 | G2:1 Bb3+Eb4+G4:1 | F2:1 A3+Eb4+F4:1 | C3:1 A3+Eb4+F4:1 | Bb2:1 D4+F4+Bb4:1 | F2:1 D4+F4+Bb4:1 | F2:1 A3+Eb4+F4:1 | C3:1 A3+Eb4+F4:1 | Bb2:1 D4+F4+Bb4:1 | F2:1 D4+F4+Bb4:1 | Bb2:1 D4+F4+Bb4:1 | F2:1 D4+F4+Bb4:1', 2),
+    voice:'trot', drums:'trot',
+  },
+  elise: {
+    name:'엘리제를 위하여', by:'베토벤', tag:'클래식', bpm:44, off:2 / 3, feel:'아주 느리게', color:'#7b5cff', art:'keys',
+    mel: seq('E5:1 D#5:1 E5:1 B4:1 D5:1 C5:1 | A4:2 r:1 C4:1 E4:1 A4:1 | B4:2 r:1 E4:1 G#4:1 B4:1 | C5:2 r:1 E4:1 E5:1 D#5:1 | E5:1 D#5:1 E5:1 B4:1 D5:1 C5:1 | A4:2 r:1 C4:1 E4:1 A4:1 | B4:2 r:1 E4:1 C5:1 B4:1 | A4:2 r:2 E5:1 D#5:1', 6),
+    acc: seq('r:6 | A2:1 E3:1 A3:1 r:3 | E2:1 E3:1 G#3:1 r:3 | A2:1 E3:1 A3:1 r:3 | r:6 | A2:1 E3:1 A3:1 r:3 | E2:1 E3:1 G#3:1 r:3 | A2:1 E3:1 A3:1 r:3', 6),
+    voice:'piano', drums:null,
+  },
+  star: {
+    name:'반짝반짝 작은 별', by:'동요 · 모차르트 변주', tag:'동요', bpm:50, off:1 / 2, feel:'느리게', color:'#1f8fbf', art:'stars',
+    mel: seq('C5:1 C5:1 G5:1 G5:1 | A5:1 A5:1 G5:2 | F5:1 F5:1 E5:1 E5:1 | D5:1 D5:1 C5:2 | G5:1 G5:1 F5:1 F5:1 | E5:1 E5:1 D5:2 | G5:1 G5:1 F5:1 F5:1 | E5:1 E5:1 D5:2 | C5:1 C5:1 G5:1 G5:1 | A5:1 A5:1 G5:2 | F5:1 F5:1 E5:1 E5:1 | D5:1 D5:1 C5:2', 1),
+    acc: seq(oom2(['C', 'C', 'F', 'C', 'F', 'C', 'G7', 'C', 'C', 'F', 'C', 'G7', 'C', 'F', 'C', 'G7', 'C', 'C', 'F', 'C', 'F', 'C', 'G7', 'C']), 1),
+    voice:'bell', drums:'pop',
+  },
+  ode: {
+    name:'환희의 송가', by:'베토벤', tag:'클래식', bpm:56, off:1 / 2, feel:'느리게', color:'#10a35a', art:'sun',
+    mel: seq('E5:2 E5:2 F5:2 G5:2 | G5:2 F5:2 E5:2 D5:2 | C5:2 C5:2 D5:2 E5:2 | E5:3 D5:1 D5:4 | E5:2 E5:2 F5:2 G5:2 | G5:2 F5:2 E5:2 D5:2 | C5:2 C5:2 D5:2 E5:2 | D5:3 C5:1 C5:4', 2),
+    acc: seq('C3:2 E4+G4:2 G2:2 E4+G4:2 | G2:2 D4+G4:2 D3:2 B3+G4:2 | C3:2 E4+G4:2 G2:2 E4+G4:2 | G2:2 B3+F4:2 G2:2 B3+F4:2 | C3:2 E4+G4:2 G2:2 E4+G4:2 | G2:2 D4+G4:2 D3:2 B3+G4:2 | C3:2 E4+G4:2 G2:2 E4+G4:2 | G2:2 B3+F4:2 C3:2 E4+G4:2', 2),
+    voice:'bell', drums:'pop',
+  },
+  arirang: {
+    name:'아리랑', by:'우리 민요', tag:'민요', bpm:58, off:1 / 2, feel:'느리게', color:'#d9482b', art:'janggu',
+    // 3/4박자, 8분음표 둘 = 게임 한 박
+    mel: seq('G4:3 A4:1 G4:1 A4:1 | C5:3 D5:1 C5:1 D5:1 | E5:2 D5:1 E5:1 C5:1 A4:1 | G4:3 A4:1 G4:1 A4:1 | C5:3 D5:1 C5:1 D5:1 | E5:1 D5:1 C5:1 A4:1 G4:1 A4:1 | C5:3 D5:1 C5:2 | C5:6 | G5:4 G5:2 | G5:2 E5:2 D5:2 | E5:2 D5:1 E5:1 C5:1 A4:1 | G4:3 A4:1 G4:1 A4:1 | C5:3 D5:1 C5:1 D5:1 | E5:1 D5:1 C5:1 A4:1 G4:1 A4:1 | C5:3 D5:1 C5:2 | C5:6', 2),
+    acc: seq(waltz(['C', 'F', 'C', 'C', 'F', 'Am', 'G', 'C', 'C', 'C', 'Am', 'C', 'F', 'Am', 'G', 'C']), 1),
+    voice:'flute', drums:null,
+  },
+  turkish: {
+    name:'터키 행진곡', by:'모차르트', tag:'클래식', bpm:60, off:1 / 2, feel:'조금 느리게', color:'#0f9b8e', art:'stripes',
+    mel: seq('C5:2 r:2 D5:1 C5:1 B4:1 C5:1 | E5:2 r:2 F5:1 E5:1 D#5:1 E5:1 | B5:1 A5:1 G#5:1 A5:1 B5:1 A5:1 G#5:1 A5:1 | C6:4 A5:2 C6:2 | B5:2 A5:2 G5:2 A5:2 | B5:2 A5:2 G5:2 A5:2 | B5:2 A5:2 G5:2 F#5:2 | E5:4 B4:1 A4:1 G#4:1 A4:1', 8),
+    acc: seq('A2:4 C4+E4:4 | A2:4 C4+E4:4 | A2:4 C4+E4:4 | A2:4 C4+E4:4 | E2:4 G3+B3:4 | E2:4 G3+B3:4 | B1:4 D#4+F#4:4 | E2:4 G#3+B3:4', 8),
+    voice:'piano', drums:'march',
+  },
+  birthday: {
+    name:'생일 축하 노래', by:'축하 노래', tag:'축하곡', bpm:62, off:1 / 2, feel:'조금 느리게', color:'#e8590c', art:'cake',
+    // 3/4박자, 16분음표 넷 = 게임 한 박
+    mel: seq('A4:4 G4:4 C5:4 | B4:8 G4:3 G4:1 | A4:4 G4:4 D5:4 | C5:8 G4:3 G4:1 | G5:4 E5:4 C5:4 | B4:4 A4:4 F5:3 F5:1 | E5:4 C5:4 D5:4 | C5:8 G4:3 G4:1', 4),
+    acc: seq(waltz(['C', 'G7', 'G7', 'C', 'C7', 'F', 'G7', 'C']), 1),
+    voice:'bell', drums:null,
+  },
+  clementine: {
+    name:'클레멘타인', by:'미국 민요 · 넓고 넓은 바닷가에', tag:'옛 노래', bpm:66, off:1 / 2, feel:'보통', color:'#1f6fb5', art:'wave',
+    // 3/4박자, 8분음표 둘 = 게임 한 박
+    mel: seq('C5:2 G4:2 E5:1 E5:1 | E5:2 C5:2 C5:1 E5:1 | G5:3 G5:1 F5:1 E5:1 | D5:4 D5:1 E5:1 | F5:2 F5:2 E5:1 D5:1 | E5:2 C5:2 C5:1 E5:1 | D5:3 G4:1 B4:1 D5:1 | C5:4 C5:1 C5:1', 2),
+    acc: seq(waltz(['C', 'C', 'C', 'G7', 'G7', 'C', 'G7', 'C']), 1),
+    voice:'piano', drums:null,
+  },
+  susanna: {
+    name:'오 수재너', by:'스티븐 포스터', tag:'컨트리', bpm:68, off:1 / 2, feel:'신나게', color:'#6a8d1f', art:'banjo',
+    // 2/4박자 한 마디 = 게임 한 박
+    mel: seq('E5:2 G5:2 G5:3 A5:1 | G5:2 E5:2 C5:3 D5:1 | E5:2 E5:2 D5:2 C5:2 | D5:6 C5:1 D5:1 | E5:2 G5:2 G5:3 A5:1 | G5:2 E5:2 C5:3 D5:1 | E5:2 E5:2 D5:2 D5:2 | C5:4 C5:2 D5:2', 8),
+    acc: seq('C3:1 E4+G4:1 | C3:1 E4+G4:1 | C3:1 E4+G4:1 | G2:1 B3+F4:1 | C3:1 E4+G4:1 | C3:1 E4+G4:1 | G2:1 B3+F4:1 | C3:1 E4+G4:1', 2),
+    voice:'piano', drums:'pop',
+  },
+  cancan: {
+    name:'캉캉', by:'오펜바흐', tag:'클래식', bpm:70, off:1 / 2, feel:'빠르게', color:'#a12bd6', art:'checker',
+    // 2/4박자 한 마디 = 게임 한 박
+    mel: seq('C5:4 | D5:1 F5:1 E5:1 D5:1 | G5:2 G5:2 | G5:1 A5:1 E5:1 F5:1 | D5:2 D5:2 | D5:1 F5:1 E5:1 D5:1 | C5:1 C6:1 B5:1 A5:1 | G5:1 F5:1 E5:1 D5:1', 4),
+    acc: seq('C3:2 E4+G4:2 | C3:2 E4+G4:2 | C3:2 E4+G4:2 | G2:2 B3+F4:2 | G2:2 B3+F4:2 | G2:2 B3+F4:2 | C3:2 E4+G4:2 | G2:2 B3+F4:2', 4),
+    voice:'piano', drums:'march',
+  },
+  fate: {
+    name:'운명 리믹스', by:'베토벤', tag:'리믹스', bpm:72, off:1 / 2, feel:'빠르게', color:'#1d1f2b', art:'fate',
+    mel: seq('r:1 G5:1 G5:1 G5:1 Eb5:4 | r:1 F5:1 F5:1 F5:1 D5:4 | r:1 G5:1 G5:1 G5:1 Eb5:1 Ab5:1 Ab5:1 Ab5:1 | G5:1 Eb5:1 Eb5:1 Eb5:1 C5:4', 2),
+    acc: seq('C2:1 C2:1 C2:1 C2:1 C2:1 C2:1 C2:1 C2:1 | G1:1 G1:1 G1:1 G1:1 G1:1 G1:1 G1:1 G1:1 | C2:1 C2:1 C2:1 C2:1 Ab1:1 Ab1:1 Ab1:1 Ab1:1 | G1:1 G1:1 G1:1 G1:1 C2:1 C2:1 C2:1 C2:1', 2),
+    voice:'lead', drums:'rock',
+  },
+};
+const SONG_KEYS = Object.keys(SONGS);
+
+const pick = Object.assign({stage:'soft', mode:'follow', song:'omona', level:'easy'}, store.get('kk_pick4', {}));
+// 곡 순서를 트로트 먼저로 바꾼 뒤 한 번은 맨 앞 곡에서 시작
+if (!store.get('kk_order2', false)){ pick.song = 'omona'; store.set('kk_order2', true); }
+if (!STAGES[pick.stage]) pick.stage = 'soft';
+if (!MODES[pick.mode]) pick.mode = 'follow';
+if (!SONGS[pick.song]) pick.song = 'omona';
+if (!LEVELS[pick.level]) pick.level = 'easy';
+const savePick = () => store.set('kk_pick4', pick);
+
+// ---- 소리 ----
+let audio = null, noiseBuf = null;
+function unlockAudio(){
+  if (!audio){ try { audio = new AudioContext(); } catch { audio = null; } }
+  if (audio) audio.resume();
+  try { speechSynthesis.speak(new SpeechSynthesisUtterance('')); } catch {}
+}
+function osc(out, type, freq, at, len, vol, glideTo){
+  const o = audio.createOscillator(), v = audio.createGain();
+  o.type = type; o.frequency.setValueAtTime(freq, at);
+  if (glideTo) o.frequency.exponentialRampToValueAtTime(glideTo, at + len);
+  v.gain.setValueAtTime(0, at); v.gain.linearRampToValueAtTime(vol, at + 0.01);
+  v.gain.exponentialRampToValueAtTime(0.0001, at + len);
+  o.connect(v).connect(out); o.start(at); o.stop(at + len + 0.05);
+}
+function noise(out, at, len, vol, type, freq, sweepTo){
+  if (!noiseBuf){
+    noiseBuf = audio.createBuffer(1, audio.sampleRate * 0.6, audio.sampleRate);
+    const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  const n = audio.createBufferSource(), v = audio.createGain(), f = audio.createBiquadFilter();
+  n.buffer = noiseBuf; f.type = type; f.frequency.setValueAtTime(freq, at);
+  if (sweepTo){ f.Q.value = 2; f.frequency.exponentialRampToValueAtTime(sweepTo, at + len); }
+  v.gain.setValueAtTime(vol, at); v.gain.exponentialRampToValueAtTime(0.0001, at + len);
+  n.connect(f).connect(v).connect(out); n.start(at); n.stop(at + len + 0.02);
+}
+function tone(at, freq, len, vol, out){ osc(out || audio.destination, 'sine', freq, at, len, vol); }
+// 트로트 목소리: 살짝 끌어올리는 음 + 떨림
+function trotVoice(out, f, at, len, vol){
+  const o = audio.createOscillator(), v = audio.createGain(), lp = audio.createBiquadFilter(), l = audio.createOscillator(), lg = audio.createGain();
+  o.type = 'sawtooth'; o.frequency.setValueAtTime(f * 0.96, at); o.frequency.linearRampToValueAtTime(f, at + 0.07);
+  l.frequency.value = 5.5; lg.gain.setValueAtTime(0, at); lg.gain.linearRampToValueAtTime(f * 0.014, at + Math.min(len, 0.35));
+  l.connect(lg).connect(o.frequency);
+  lp.type = 'lowpass'; lp.frequency.value = 2000;
+  v.gain.setValueAtTime(0, at); v.gain.linearRampToValueAtTime(vol, at + 0.03);
+  v.gain.setValueAtTime(vol, at + len * 0.8); v.gain.exponentialRampToValueAtTime(0.0001, at + len);
+  o.connect(lp).connect(v).connect(out);
+  o.start(at); l.start(at); o.stop(at + len + 0.05); l.stop(at + len + 0.05);
+}
+function voice(out, kind, f, at, len, vol){
+  if (kind === 'piano'){ osc(out, 'triangle', f, at, Math.max(0.25, len * 1.6), vol); osc(out, 'sine', f * 2, at, 0.2, vol * 0.25); }
+  else if (kind === 'bell'){ osc(out, 'sine', f, at, Math.max(0.3, len * 1.2), vol); osc(out, 'sine', f * 3, at, 0.15, vol * 0.15); }
+  else if (kind === 'flute'){ osc(out, 'sine', f, at, len * 0.95, vol); osc(out, 'triangle', f * 2, at, len * 0.6, vol * 0.12); }
+  else if (kind === 'lead'){ osc(out, 'square', f, at, len * 0.9, vol * 0.45); osc(out, 'sawtooth', f / 2, at, len * 0.9, vol * 0.18); }
+  else if (kind === 'trot') trotVoice(out, f, at, len * 0.95, vol * 0.5);
+  else osc(out, 'triangle', f, at, len, vol);
+}
+// 한 마디(4박)에 들어갈 음을 반복되는 악보에서 꺼내 연주
+function playSeq(out, s, g0, t0, b, kind, vol){
+  for (let rep = Math.floor(g0 / s.len); rep * s.len < g0 + 4; rep++){
+    s.forEach(n => {
+      const abs = rep * s.len + n.beat;
+      if (abs < g0 - 1e-6 || abs >= g0 + 4 - 1e-6) return;
+      n.notes.forEach(x => voice(out, kind, hz(x), t0 + (abs - g0) * b, n.dur * b, vol / Math.sqrt(n.notes.length)));
+    });
+  }
+}
+function drums(out, kind, t0, b){
+  if (!kind) return;
+  for (let k = 0; k < 4; k++){
+    const at = t0 + k * b;
+    if (kind === 'pop'){
+      osc(out, 'sine', 120, at, 0.18, k % 2 ? 0.12 : 0.22, 45);
+      noise(out, at + b / 2, 0.05, 0.05, 'highpass', 7000);
+    } else if (kind === 'march'){
+      osc(out, 'sine', 110, at, 0.15, 0.16, 50);
+      noise(out, at + b / 2, 0.06, 0.07, 'bandpass', 2500);
+    } else if (kind === 'rock'){
+      osc(out, 'sine', 130, at, 0.2, k % 2 ? 0.14 : 0.26, 45);
+      if (k % 2) noise(out, at, 0.14, 0.16, 'bandpass', 1800);
+      noise(out, at, 0.04, 0.05, 'highpass', 8000); noise(out, at + b / 2, 0.04, 0.05, 'highpass', 8000);
+    } else if (kind === 'trot'){
+      // 쿵 · 짝
+      osc(out, 'sine', 115, at, 0.2, 0.24, 45);
+      noise(out, at + b / 2, 0.1, 0.14, 'bandpass', 1900);
+      noise(out, at + b / 2, 0.04, 0.05, 'highpass', 7500);
+    } else if (kind === 'latin'){
+      osc(out, 'sine', 100, at, 0.16, k % 2 ? 0.1 : 0.2, 50);
+      noise(out, at + b / 2, 0.03, 0.04, 'highpass', 9000);
+      if (k === 0) [0, 1.5, 3].forEach(x => osc(out, 'square', 1700, t0 + x * b, 0.04, 0.05));
+    } else if (kind === 'gut'){
+      // 굿거리: 한 박을 셋으로. 덩 · 기덕 · 쿵 · 더러러러
+      const pat = ['D', '', 'g', 'k', '', 'K', '', 'd', 'r', 'r', 'r', ''];
+      for (let j = 0; j < 3; j++){
+        const p = pat[k * 3 + j], st = at + j * b / 3;
+        if (p === 'D' || p === 'K') osc(out, 'sine', 95, st, 0.3, p === 'D' ? 0.24 : 0.18, 55);
+        if (p === 'D' || p === 'k') noise(out, st, 0.08, 0.11, 'bandpass', 1800);
+        if (p === 'g' || p === 'd' || p === 'r') noise(out, st, 0.05, p === 'r' ? 0.05 : 0.08, 'bandpass', 2400);
+      }
+    }
+  }
+}
+function playGroup(key, n, t0, out){
+  const s = SONGS[key], b = 60 / s.bpm, g0 = (n - 1) * 4;
+  const mv = s.voice === 'lead' ? 0.12 : s.voice === 'trot' ? 0.1 : 0.07;
+  playSeq(out, s.mel, g0, t0, b, s.voice, mv);
+  playSeq(out, s.acc, g0, t0, b, s.voice === 'lead' ? 'lead' : 'piano', s.voice === 'lead' ? 0.05 : 0.045);
+  drums(out, s.drums, t0, b);
+}
+
+// 효과음: 넘기기 · 고르기 · 시작 · 맞춤(콤보가 이어질수록 음이 올라감) · 콤보 · 끊김
+function sfx(kind, n){
+  if (!audio) return;
+  const t = audio.currentTime + 0.01, out = audio.destination;
+  if (kind === 'flip'){
+    noise(out, t, 0.22, 0.22, 'bandpass', n > 0 ? 500 : 3000, n > 0 ? 3000 : 500);
+    osc(out, 'square', n > 0 ? 1320 : 990, t + 0.1, 0.05, 0.05);
+  } else if (kind === 'tap'){
+    osc(out, 'square', 660, t, 0.08, 0.06, 990);
+  } else if (kind === 'back'){
+    osc(out, 'triangle', 520, t, 0.1, 0.12, 330);
+  } else if (kind === 'select'){
+    [1047, 1319, 1568].forEach((f, i) => osc(out, 'square', f, t + i * 0.06, 0.09, 0.05));
+    osc(out, 'sine', 2093, t + 0.18, 0.3, 0.08);
+  } else if (kind === 'confirm'){
+    [523, 659, 784, 1047, 1319].forEach((f, i) => { osc(out, 'triangle', f, t + i * 0.06, 0.25, 0.14); osc(out, 'square', f, t + i * 0.06, 0.08, 0.03); });
+    noise(out, t + 0.3, 0.6, 0.12, 'highpass', 5000);
+  } else if (kind === 'hit'){
+    const f = 659 * 2 ** (Math.min(n.combo - 1, 12) / 12);
+    osc(out, 'triangle', f, t, 0.1, 0.2); osc(out, 'sine', n.exact ? f * 2 : f * 1.5, t + 0.06, 0.16, 0.18);
+  } else if (kind === 'combo'){
+    [784, 988, 1175, 1568, 1976, 2349].forEach((f, i) => osc(out, 'square', f, t + i * 0.045, 0.1, 0.05));
+    noise(out, t + 0.25, 0.5, 0.1, 'highpass', 6000);
+    osc(out, 'sine', 196, t, 0.3, 0.2, 98);
+  } else if (kind === 'miss'){
+    osc(out, 'sine', 180, t, 0.22, 0.2, 70);
+  } else if (kind === 'count'){
+    osc(out, 'square', 1200 + n * 6, t, 0.03, 0.03);
+  } else if (kind === 'nod'){
+    [880, 1320].forEach((f, i) => osc(out, 'sine', f, t + i * 0.09, 0.2, 0.2));
+  }
+}
+
+// ---- 미리 듣기: 곡 화면 · 난이도 화면에서 계속 흐름 ----
+let preview = null;
+function startPreview(key){
+  if (!audio) return;
+  if (preview && preview.key === key) return;
+  stopPreview();
+  const out = audio.createGain(); out.gain.value = 0; out.connect(audio.destination);
+  out.gain.linearRampToValueAtTime(0.9, audio.currentTime + 0.4);
+  preview = {key, out, t0:audio.currentTime + 0.25, n:1};
+}
+function stopPreview(){
+  if (!preview) return;
+  const p = preview; preview = null;
+  const at = audio.currentTime;
+  p.out.gain.cancelScheduledValues(at); p.out.gain.setValueAtTime(p.out.gain.value, at); p.out.gain.linearRampToValueAtTime(0, at + 0.3);
+  setTimeout(() => p.out.disconnect(), 450);
+}
+function schedulePreview(){
+  if (!preview) return;
+  const b = 60 / SONGS[preview.key].bpm;
+  while (preview.t0 + (preview.n - 1) * 4 * b < audio.currentTime + 1.2){
+    playGroup(preview.key, preview.n, preview.t0 + (preview.n - 1) * 4 * b, preview.out);
+    preview.n++;
+  }
+}
+
+// ---- 말하기 · 듣기 ----
+let koVoice = null;
+function findVoice(){ try { koVoice = speechSynthesis.getVoices().find(v => /^ko/i.test(v.lang)) || null; } catch {} }
+try { findVoice(); speechSynthesis.onvoiceschanged = findVoice; } catch {}
+function speak(text){
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'ko-KR'; u.rate = 0.95; if (koVoice) u.voice = koVoice;
+    duck(true); u.onend = () => duck(false); u.onerror = () => duck(false);
+    speechSynthesis.speak(u);
+  } catch {}
+}
+function duck(on){
+  if (!game || !game.musicOut || !audio) return;
+  const gn = game.musicOut.gain, at = audio.currentTime, base = game.reached ? 0.8 : 1;
+  gn.cancelScheduledValues(at); gn.setValueAtTime(gn.value, at); gn.linearRampToValueAtTime(on ? 0.2 : base, at + 0.25);
+}
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, recOn = false, srBlocked = !SR;
+function listen(on){
+  if (srBlocked) return;
+  if (on){
+    if (recOn) return;
+    recOn = true;
+    rec = new SR(); rec.lang = 'ko-KR'; rec.continuous = true; rec.interimResults = true;
+    rec.onresult = e => {
+      for (let i = e.resultIndex; i < e.results.length; i++){
+        const t = e.results[i][0].transcript.replace(/\s/g, '');
+        if (/아직|안먹/.test(t)) continue;
+        if (/다먹|먹었|끝났|다했/.test(t)){ finish('voice'); return; }
+      }
+    };
+    rec.onerror = e => { if (e.error === 'not-allowed' || e.error === 'service-not-allowed'){ srBlocked = true; recOn = false; askHint(); } };
+    rec.onend = () => { if (recOn && game && game.phase === 'ask'){ try { rec.start(); } catch {} } else recOn = false; };
+    try { rec.start(); } catch { recOn = false; }
+  } else {
+    recOn = false;
+    if (rec){ try { rec.stop(); } catch {} rec = null; }
+  }
+}
+
+// ---- 화면 이동 ----
+let screen = 'home';
+const CAM = {setup:'cam-big', play:'cam-pip'};
+// 준비 화면에선 카메라 화면을 회색 칸 안에 넣어서 스크롤할 때 같이 움직이게 함
+function camMode(cls){
+  const box = $('camBox'), home = cls === 'cam-big' ? $('camspace') : $('screen');
+  if (box.parentNode !== home){ home.insertBefore(box, home.firstChild); if (video.srcObject) video.play().catch(() => {}); }
+  box.className = cls;
+}
+function go(name){
+  if (name !== 'song' && name !== 'mode' && name !== 'level') stopPreview();
+  if (screen === 'six' && name !== 'six') stop666();
+  if (screen === 'result' && name !== 'result'){ clearInterval(autoSix); clearInterval(countUp); }
+  document.querySelectorAll('.scr').forEach(s => { s.hidden = s.id !== 's-' + name; });
+  screen = name;
+  camMode(camOn ? (CAM[name] || 'cam-off') : 'cam-off');
+  if (name === 'mode'){ renderModes(); startPreview(pick.song); }
+  if (name === 'song'){ renderSong(0); startPreview(pick.song); }
+  if (name === 'level'){ renderLevels(); startPreview(pick.song); }
+  if (name === 'play') enterPlay();
+  if (name === 'home') renderHome();
+  $('s-' + name).scrollTop = 0;
+  updateFlow();
+}
+document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { sfx('back'); go(b.dataset.go); });
+
+// 오늘 칸: 하루 세 끼, 한 판 끝낼 때마다 한 칸 (주간 파우치 칸과 같은 모양)
+const MEALS = ['아침', '점심', '저녁'];
+const todayN = () => { const t = store.get('kk_today', {}); return t.d === fmt(new Date()) ? t.n : 0; };
+function addMeal(){ store.set('kk_today', {d:fmt(new Date()), n:Math.min(3, todayN() + 1)}); }
+function streakDays(){
+  const days = new Set(store.get('kk_days', []));
+  const d = new Date(); if (!days.has(fmt(d))) d.setDate(d.getDate() - 1);
+  let n = 0; while (days.has(fmt(d))){ n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+function renderHome(){
+  const st = STAGES[pick.stage], n = todayN(), all = n >= 3, streak = streakDays();
+  $('streakN').textContent = streak || '첫';
+  $('streak').lastElementChild.textContent = streak ? '일 연속' : '날, 오늘 시작';
+  $('streak').setAttribute('aria-label', streak + '일 연속');
+  $('homeTitle').textContent = all ? '오늘 몫은 다 했어요' : '오늘도 꼭꼭';
+  $('slots').innerHTML = MEALS.map((m, i) => `<div class="slot ${i < n ? 'done' : ''}">${i < n ? SVG[st.shape](css(st.color)) : '<svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="22" fill="none" stroke="currentColor" stroke-width="3"/></svg>'}</div>`).join('');
+  $('todayTxt').textContent = n + ' / 3';
+  $('stageIcon').innerHTML = SVG[st.shape](css(st.color));
+  $('stageName').textContent = st.name + ' 단계';
+  $('stageTarget').textContent = st.target + '번';
+  $('homeStart').textContent = all ? '오늘은 다 했어요' : '시작하기';
+  $('homeStart').disabled = all;
+  $('homeMore').hidden = !all;  // 시연용: 다 먹은 날에도 한 판 더
+}
+const homeGo = () => { unlockAudio(); sfx('select'); go(camReady ? 'song' : 'setup'); };
+$('homeStart').onclick = homeGo;
+$('homeMore').onclick = homeGo;
+// 아래 탭: 시연에서는 홈만 열림
+$('stageChip').onclick = () => {
+  unlockAudio();
+  const ks = Object.keys(STAGES);
+  pick.stage = ks[(ks.indexOf(pick.stage) + 1) % ks.length]; savePick();
+  sfx('tap'); renderHome();
+  $('stageChip').classList.remove('pop'); void $('stageChip').offsetWidth; $('stageChip').classList.add('pop');
+};
+
+function renderModes(){
+  const box = $('modeOpts'); box.innerHTML = '';
+  Object.entries(MODES).forEach(([k, m]) => {
+    const b = document.createElement('button');
+    b.className = 'mcard'; b.setAttribute('aria-pressed', String(pick.mode === k));
+    b.innerHTML = `<canvas data-demo="${k}" aria-hidden="true"></canvas><span><b>${m.name}</b><small>${m.desc}</small></span>`;
+    b.onclick = () => {
+      pick.mode = k; savePick(); sfx('select');
+      box.querySelectorAll('.mcard').forEach(c => c.setAttribute('aria-pressed', String(c === b)));
+      b.classList.add('pop');
+      setTimeout(() => go('level'), 260);
+    };
+    box.appendChild(b);
+  });
+}
+
+// 곡 카드: 화면 가득, 넘기면 휙 · 고르면 띠링 + 곡 이름을 말해 줌
+function songCard(key){
+  const s = SONGS[key], i = SONG_KEYS.indexOf(key);
+  const el = document.createElement('div');
+  el.className = 'scard';
+  el.style.setProperty('--cardbg', s.color);
+  el.innerHTML = `<div class="top"><span>${String(i + 1).padStart(2, '0')} / ${String(SONG_KEYS.length).padStart(2, '0')}</span><span class="pill">${s.feel} · 1분에 ${s.bpm}박</span></div>
+    <div class="art"><svg viewBox="0 0 200 200" aria-hidden="true">${ART[s.art]}</svg></div>
+    <span class="tag"></span><span class="nm"></span><span class="by"></span>
+    <div class="sdots">${SONG_KEYS.map(k => `<i class="${k === key ? 'on' : ''}"></i>`).join('')}</div>
+    <button class="ok">이 곡으로</button>`;
+  el.querySelector('.tag').textContent = s.tag;
+  el.querySelector('.nm').textContent = s.name;
+  el.querySelector('.by').textContent = s.by;
+  el.querySelector('.ok').onclick = e => { e.stopPropagation(); chooseSong(el); };
+  let sx = null;
+  el.addEventListener('pointerdown', e => { if (e.target.closest('button')) return; sx = e.clientX; });
+  el.addEventListener('pointerup', e => { if (sx !== null && Math.abs(e.clientX - sx) > 40) stepSong(e.clientX < sx ? 1 : -1); sx = null; });
+  return el;
+}
+function renderSong(dir){
+  const deck = $('deck');
+  const old = deck.querySelector('.scard:not(.out-l):not(.out-r)');
+  const el = songCard(pick.song);
+  if (old && dir){
+    old.classList.add(dir > 0 ? 'out-l' : 'out-r');
+    setTimeout(() => old.remove(), 300);
+    el.classList.add(dir > 0 ? 'in-r' : 'in-l');
+  } else if (old) old.remove();
+  deck.querySelectorAll('.scard.out-l,.scard.out-r').forEach(x => { if (x !== old) x.remove(); });
+  deck.insertBefore(el, $('songPrev'));
+}
+function stepSong(d){
+  const i = SONG_KEYS.indexOf(pick.song);
+  pick.song = SONG_KEYS[(i + d + SONG_KEYS.length) % SONG_KEYS.length]; savePick();
+  sfx('flip', d);
+  renderSong(d); startPreview(pick.song);
+}
+function chooseSong(el){
+  sfx('select'); speak(SONGS[pick.song].name + '!');
+  el.classList.add('picked');
+  setTimeout(() => { if (screen === 'song') go('mode'); }, 520);
+}
+$('songPrev').onclick = () => stepSong(-1);
+$('songNext').onclick = () => stepSong(1);
+addEventListener('keydown', e => {
+  if (screen !== 'song') return;
+  if (e.key === 'ArrowLeft') stepSong(-1);
+  if (e.key === 'ArrowRight') stepSong(1);
+});
+
+// 난이도: 한 번 누르면 그 박자를 들려주고, 한 번 더 누르면(또는 시작!) 시작
+let armed = null;
+function renderLevels(){
+  armed = null;
+  const s = SONGS[pick.song];
+  $('levelSub').textContent = s.name + ' 기준이에요. 누르면 그 박자를 들려주고, 한 번 더 누르면 시작해요.';
+  const box = $('levelOpts'); box.innerHTML = '';
+  Object.entries(LEVELS).forEach(([k, l]) => {
+    const b = document.createElement('button');
+    b.className = 'lcard'; b.dataset.k = k; b.setAttribute('aria-pressed', String(pick.level === k));
+    const every = 4 * 60 / s.bpm / l.lv, perMin = Math.round(l.lv * s.bpm / 4);
+    const secTxt = (every >= 1.25 ? String(Math.round(every * 2) / 2) : every.toFixed(1)) + '초에 한 번';
+    b.innerHTML = `<span class="lv">${l.lv}<small>LV</small></span><span><b>${l.name} <small style="font-weight:500">· ${l.who}</small></b>
+      <span class="lmeta"><span>약 ${secTxt}${k === 'hard' ? ' (엇박 포함)' : ''}</span><span>1분에 ${perMin}번쯤</span></span>
+      <span class="grid8">${l.grid.map(on => `<i class="${on ? 'on' : ''}"></i>`).join('')}</span></span>`;
+    b.onclick = () => {
+      if (armed === k){ confirmLevel(); return; }
+      armed = k; pick.level = k; savePick();
+      box.querySelectorAll('.lcard').forEach(c => c.setAttribute('aria-pressed', String(c === b)));
+      b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+      sfx('tap'); speak(l.name);
+      previewTicks(k, b);
+    };
+    box.appendChild(b);
+  });
+}
+function previewTicks(k, card){
+  if (!audio) return;
+  const s = SONGS[pick.song], b = 60 / s.bpm, pat = LEVELS[k].pat(s.off);
+  let t0 = audio.currentTime + 0.35;
+  if (preview){ const n = Math.ceil((t0 - preview.t0) / b); t0 = preview.t0 + n * b; }
+  const dots = card.querySelectorAll('.grid8 i');
+  pat.forEach(p => {
+    const at = t0 + p * b;
+    osc(audio.destination, 'square', 1175, at, 0.06, 0.07); tone(at, 1760, 0.08, 0.12);
+    const d = dots[Math.min(7, Math.round(p * 2))];
+    setTimeout(() => { d.classList.add('hit'); setTimeout(() => d.classList.remove('hit'), 160); }, (at - audio.currentTime) * 1000);
+  });
+}
+function confirmLevel(){
+  sfx('confirm');
+  setTimeout(() => { if (screen === 'level') go('play'); }, 420);
+}
+$('levelGo').onclick = confirmLevel;
+
+// 오른쪽 흐름 안내
+function updateFlow(){
+  const order = ['setup', 'song', 'mode', 'level', 'chew', 'swallow', 'ask', 'result', 'six'];
+  let now = screen === 'home' ? null : screen;
+  if (screen === 'play') now = game ? (game.phase === 'ask' ? 'ask' : game.phase === 'swallow' ? 'swallow' : 'chew') : 'chew';
+  const idx = order.indexOf(now);
+  document.querySelectorAll('#flow li').forEach(li => {
+    const i = order.indexOf(li.dataset.k);
+    li.classList.toggle('now', i === idx);
+    li.classList.toggle('done', idx >= 0 && i < idx);
+  });
+}
+
+// ---- 얼굴 인식 ----
+const video = $('video');
+let landmarker = null, lastVideoTime = -1, lastT = null, camOn = false, camReady = false;
+// 0 = 종합(여러 움직임을 합친 신호), 나머지는 신호 하나씩
+// 종합: 여러 움직임을 각자 잡음 크기로 나눠 더함. 한 군데만 튀는 잡음은 묻히고, 턱 · 입술 · 입꼬리가 같이 움직이면 커짐
+// 0번 칸이 종합. 1~5번 + 화면에 따로 안 보이는 두 가지(코끝~턱 끝, 코끝~입꼬리 가운데)를 함께 씀
+const FUSE_W = [0, 1, 1, 0.6, 0.6, 1, 1, 0.8];
+const XS = [0, 1].map(() => ({sm:null, base:null, sd:null}));
+const fuseRaw = z => { let a = 0, w2 = 0; for (let i = 1; i < FUSE_W.length; i++){ a += FUSE_W[i] * Math.max(-6, Math.min(8, z[i])); w2 += FUSE_W[i] ** 2; } return a / Math.sqrt(w2); };
+const SIG = [0,1,2,3,4,5].map(() => ({sm:null, base:null, sd:null, state:'low', lastEv:0, hiAt:0, peak:0, count:0, peaks:[]}));
+const hist = [], events = [];
+let calibrating = null, counting = false, faceSince = 0;
+const latency = 0;
+$('sens').value = store.get('kk_sens5', 2.25);
+const sens = () => Number($('sens').value);
+const sel = () => Number($('sigSel').value);
+function status(msg){ $('status').textContent = msg; }
+function dist(a, b, W, H){ return Math.hypot((a.x - b.x) * W, (a.y - b.y) * H, (a.z - b.z) * W); }
 function highpass(s, x, dt){
   if (s.sm === null){ s.sm = x; s.base = x; }
-  s.sm += 0.5 * (x - s.sm);                       // 프레임 잡음 줄이기
+  s.sm += 0.5 * (x - s.sm);                              // 프레임 잡음 줄이기
   s.base += (1 - Math.exp(-dt / 1.2)) * (s.sm - s.base); // 1.2초짜리 느린 기준선
-  return s.sm - s.base;                            // 기준선에서 벗어난 만큼 = 씹는 움직임
+  return s.sm - s.base;                                   // 기준선에서 벗어난 만큼 = 씹는 움직임
 }
-
-function sens(){ return Number($('sens').value); }
-function sel(){ return Number($('sigSel').value); }
-
-function detect(i, hp, t){
+// v = 잡음 몇 배만큼 움직였는지. 선을 넘어 50ms 넘게 머물렀다가 돌아오면 1번 (한 프레임 튀는 잡음은 안 셈)
+function detect(i, v, t){
   const s = SIG[i];
   if (!s.sd) return;
-  const up = sens() * s.sd, down = Math.min(1, 0.4 * sens()) * s.sd;
-  if (s.state === 'low' && hp > up){ s.state = 'high'; s.peak = hp; }
+  const up = sens(), down = Math.min(1, 0.4 * sens());
+  if (s.state === 'low' && v > up){ s.state = 'high'; s.peak = v; s.hiAt = t; }
   else if (s.state === 'high'){
-    if (hp > s.peak) s.peak = hp;
-    if (hp < down){
+    if (v > s.peak) s.peak = v;
+    if (v < down){
       s.state = 'low';
-      if (t - s.lastEv > 200){                     // 0.2초 안의 중복은 무시
+      if (t - s.hiAt >= 50 && t - s.lastEv > 200){
         s.lastEv = t;
         events.push({t, i});
-        if (counting){ s.count++; s.peaks.push(s.peak / s.sd); $('c' + i).textContent = s.count; }
+        if (counting){ s.count++; s.peaks.push(s.peak); $('c' + i).textContent = s.count; }
         if (i === sel()) onChew(t);
       }
     }
   }
 }
+// 끄덕임: 고개 각도 · 코끝 높이 · 눈과 코 사이 비율 셋 중 하나라도 크게 바뀌었다가 1.6초 안에 돌아오면
+const nod = {base:null, state:'rest', t0:0, d:0, pitch:null};
+const NOD_SCALE = [6, 0.05, 0.12];   // 6도 · 눈 사이 거리의 5% · 12%
+function nodTrack(f, now, dt){
+  if (!nod.base) nod.base = f.slice();
+  let d = 0;
+  f.forEach((x, i) => {
+    if (!Number.isFinite(x) || !Number.isFinite(nod.base[i])) return;
+    let v = x - nod.base[i];
+    if (i === 0){ if (v > 180) v -= 360; if (v < -180) v += 360; }
+    d = Math.max(d, Math.abs(v) / NOD_SCALE[i]);
+  });
+  nod.d = d;
+  if (nod.state === 'rest'){
+    const k = 1 - Math.exp(-dt / 1.5);
+    f.forEach((x, i) => { if (Number.isFinite(x)) nod.base[i] = Number.isFinite(nod.base[i]) ? nod.base[i] + k * (x - nod.base[i]) : x; });
+    if (d > 1){ nod.state = 'dip'; nod.t0 = now; }
+  } else if (d < 0.45){
+    nod.state = 'rest';
+    if (now - nod.t0 < 1600) onNod();
+  } else if (now - nod.t0 > 2000){ nod.state = 'rest'; nod.base = f.slice(); }
+}
 
-// ---- 카메라 + 모델 ----
-$('startBtn').onclick = async () => {
-  $('startBtn').disabled = true;
+let looping = false;
+$('camBtn').onclick = async () => {
+  $('camBtn').disabled = true; renderCamChip();
+  unlockAudio();
   try {
     status('카메라 켜는 중이에요…');
     const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user', width:640, height:480}, audio:false});
     video.srcObject = stream;
     await video.play();
-    status('인식 모델을 불러오는 중이에요. 처음엔 10초쯤 걸려요.');
-    const fs = await FilesetResolver.forVisionTasks(WASM);
-    const opts = d => ({baseOptions:{modelAssetPath:MODEL, delegate:d}, runningMode:'VIDEO', numFaces:1, outputFaceBlendshapes:true});
-    try { landmarker = await FaceLandmarker.createFromOptions(fs, opts('GPU')); }
-    catch { landmarker = await FaceLandmarker.createFromOptions(fs, opts('CPU')); }
-    status('카메라가 켜졌어요. 2번 [준비하기]를 눌러 주세요.');
-    $('st1').classList.add('done');
-    $('calBtn').disabled = false;
-    requestAnimationFrame(loop);
+    camOn = true; camMode('cam-big'); renderCamChip();
+    if (!landmarker){
+      status('인식 모델을 불러오는 중이에요. 처음엔 10초쯤 걸려요.');
+      const fs = await FilesetResolver.forVisionTasks(WASM);
+      const opts = d => ({baseOptions:{modelAssetPath:MODEL, delegate:d}, runningMode:'VIDEO', numFaces:1,
+                          outputFaceBlendshapes:true, outputFacialTransformationMatrixes:true});
+      try { landmarker = await FaceLandmarker.createFromOptions(fs, opts('GPU')); }
+      catch { landmarker = await FaceLandmarker.createFromOptions(fs, opts('CPU')); }
+    }
+    if (!looping){ looping = true; requestAnimationFrame(loop); }
+    $('setupA').hidden = true; $('setupB').hidden = false;
+    status('');
+    waitFaceThenCalibrate();
   } catch (e) {
     console.error(e);
-    if (e && e.name === 'NotAllowedError'){
-      status('카메라 권한이 막혀 있어요. ① Claude 안 미리보기가 아니라, 내려받은 파일을 Chrome에서 직접 열었는지 ② 주소창 왼쪽 아이콘 → 카메라 → 허용 ③ (Mac) 시스템 설정 → 개인정보 보호 및 보안 → 카메라 → Chrome 켜기, 를 확인하고 새로고침해 주세요.');
-      $('startBtn').disabled = false;
-      return;
-    }
-    status('카메라나 모델을 열지 못했어요. 카메라 권한을 허용했는지, 인터넷이 연결됐는지 확인하고 새로고침해 주세요. (' + (e.message || e) + ')');
-    $('startBtn').disabled = false;
+    status(e && e.name === 'NotAllowedError'
+      ? '카메라 권한이 막혀 있어요. 주소창 왼쪽 아이콘 → 카메라 → 허용을 확인하고 새로고침해 주세요.'
+      : '카메라나 모델을 열지 못했어요. 카메라 권한과 인터넷 연결을 확인하고 새로고침해 주세요. (' + (e.message || e) + ')');
+    $('camBtn').disabled = false; renderCamChip();
   }
 };
 
-let faceSeen = false;
+let lastFace = 0;
+// 내 입이 얼마나 벌어졌는지 (0~1): 입술 간격과 턱 벌림 중 큰 쪽. 다문 입 간격은 천천히 따라감
+let mouthOpen = 0, lipBase = null;
+function trackMouth(lip, jawO){
+  lipBase = lipBase === null || lip < lipBase ? lip : lipBase + (lip - lipBase) * 0.003;
+  const k = Math.max(0, Math.min(1, Math.max((lip - lipBase) / 0.32, (jawO - 0.08) / 0.4)));
+  mouthOpen += (k - mouthOpen) * 0.5;
+}
 function loop(){
+  if (!camOn){ looping = false; return; }
   const now = performance.now();
   if (video.currentTime !== lastVideoTime && video.readyState >= 2){
     lastVideoTime = video.currentTime;
     const r = landmarker.detectForVideo(video, now);
-    const dt = lastT ? (now - lastT) / 1000 : 1 / 30;
+    const dt = lastT ? Math.min(0.2, (now - lastT) / 1000) : 1 / 30;
     lastT = now;
     const p = r.faceLandmarks && r.faceLandmarks[0];
     if (p){
-      if (!faceSeen){ faceSeen = true; }
-      window.__lastFace = now;
+      if (!faceSince || now - lastFace > 500) faceSince = now;
+      lastFace = now;
       const W = video.videoWidth, H = video.videoHeight;
-      const eye = dist(p[33], p[263], W, H);       // 눈 바깥 끝 사이 = 얼굴 크기 기준
+      const eye = dist(p[33], p[263], W, H);
       const raw = [
         0,
-        dist(p[1], p[17], W, H) / eye,             // 코끝 ~ 아랫입술 아래: 입 다물고 씹어도 아랫입술이 턱 따라 움직임
-        dist(p[152], p[168], W, H) / eye,          // 미간 ~ 턱 끝: 아래턱이 내려가면 길어짐
-        dist(p[13], p[14], W, H) / eye,            // 윗입술 ~ 아랫입술 안쪽 간격
-        (r.faceBlendshapes[0].categories.find(c => c.categoryName === 'jawOpen') || {score:0}).score
+        dist(p[1], p[17], W, H) / eye,             // 코끝 ~ 아랫입술 아래: 입 다물고 씹어도 턱 따라 움직임
+        dist(p[152], p[168], W, H) / eye,          // 미간 ~ 턱 끝
+        dist(p[13], p[14], W, H) / eye,            // 입술 안쪽 간격
+        ((r.faceBlendshapes[0] && r.faceBlendshapes[0].categories.find(c => c.categoryName === 'jawOpen')) || {score:0}).score,
+        dist(p[1], p[14], W, H) / eye,             // 코끝 ~ 아랫입술 안쪽: 아랫입술만 움직여도 바뀜
       ];
+      trackMouth(raw[3], raw[4]);
       const hp = raw.map((x, i) => i === 0 ? 0 : highpass(SIG[i], x, dt));
-      hp[0] = SIG[1].sd && SIG[2].sd ? (hp[1] / SIG[1].sd + hp[2] / SIG[2].sd) / Math.SQRT2 : 0;
-      hist.push({t:now, v:hp});
-      if (calibrating) calibrating.push(hp);
-      hp.forEach((v, i) => detect(i, v, now));
-    } else if (faceSeen) {
-      if (now - (window.__lastFace || 0) > 1500) status('얼굴이 안 보여요. 화면 가운데로 와 주세요.');
+      const mouthMid = {x:(p[61].x + p[291].x) / 2, y:(p[61].y + p[291].y) / 2, z:(p[61].z + p[291].z) / 2};
+      const hx = [dist(p[1], p[152], W, H) / eye, dist(p[1], mouthMid, W, H) / eye].map((x, j) => highpass(XS[j], x, dt));
+      if (calibrating && now > calibrating.from) calibrating.data.push(hp.concat(hx));
+      // 잡음 몇 배인지로 바꿔서, 신호마다 크기가 달라도 같은 선으로 판정
+      const v = hp.map((x, i) => SIG[i].sd && i ? x / SIG[i].sd : 0);
+      const z = v.concat(hx.map((x, j) => XS[j].sd ? x / XS[j].sd : 0));
+      v[0] = SIG[0].sd ? fuseRaw(z) / SIG[0].sd : 0;
+      hist.push({t:now, v});
+      v.forEach((x, i) => detect(i, x, now));
+      // 끄덕임 단서 셋
+      const m = r.facialTransformationMatrixes && r.facialTransformationMatrixes[0];
+      let pitch = NaN;
+      if (m && m.data){
+        pitch = Math.atan2(m.data[6], m.data[10]) * 180 / Math.PI;
+        if (pitch > 90) pitch -= 180; else if (pitch < -90) pitch += 180;   // 행렬 방향이 뒤집혀 ±180 근처를 오가는 경우
+      }
+      const eyeY = (p[33].y + p[263].y) / 2 * H;
+      nod.pitch = pitch;
+      nodTrack([pitch, (p[1].y * H - eyeY) / eye, p[1].y * H / eye], now, dt);
     }
   }
+  if (now - lastFace > 400) mouthOpen *= 0.85;
   while (hist.length && now - hist[0].t > 6000) hist.shift();
   while (events.length && now - events[0].t > 6000) events.shift();
-  drawGraph(now);
-  drawAvatar();
-  drawStage(now);
   requestAnimationFrame(loop);
 }
 
-// ---- 2단계: 잡음 재기 ----
-$('calBtn').onclick = () => {
-  $('calBtn').disabled = true;
-  calibrating = [];
+// ---- 준비: 얼굴이 1초 넘게 잘 보인 뒤에 재기 ----
+function waitFaceThenCalibrate(){
+  $('setupB').hidden = false; $('setupC').hidden = true;
+  $('calTitle').textContent = '얼굴을 화면 가운데에';
+  $('calSub').textContent = '얼굴이 잘 보이면 바로 시작해요.';
+  $('camOverlay').textContent = '';
+  const tm = setInterval(() => {
+    const now = performance.now();
+    if (faceSince && now - lastFace < 300 && now - faceSince > 1000){ clearInterval(tm); calibrate(); }
+  }, 150);
+}
+function calibrate(){
+  calibrating = {from:performance.now() + 700, data:[]};   // 처음 0.7초는 버림
+  $('setupB').hidden = false; $('setupC').hidden = true;
+  $('calTitle').textContent = '입을 다문 채 가만히';
+  $('calSub').textContent = '가만히 있을 때의 작은 흔들림을 재요.';
   let left = 5;
-  $('calInfo').textContent = '5초 남음';
+  $('camOverlay').textContent = left;
   const tm = setInterval(() => {
     left--;
-    $('calInfo').textContent = left > 0 ? left + '초 남음' : '';
-    if (left <= 0){
-      clearInterval(tm);
-      const data = calibrating; calibrating = null;
-      const std = xs => { const m = xs.reduce((a, b) => a + b, 0) / xs.length; return Math.max(1e-6, Math.sqrt(xs.reduce((a, b) => a + (b - m) ** 2, 0) / xs.length)); };
-      for (let i = 1; i < SIG.length; i++){ SIG[i].sd = std(data.map(d => d[i])); SIG[i].state = 'low'; }
-      SIG[0].sd = std(data.map(d => (d[1] / SIG[1].sd + d[2] / SIG[2].sd) / Math.SQRT2));
-      SIG[0].state = 'low';
-      $('calInfo').textContent = '준비됐어요. 자세가 바뀌면 다시 눌러 주세요.';
-      $('st2').classList.add('done');
-      $('calBtn').disabled = false;
-      $('countBtn').disabled = false;
-      $('playBtn').disabled = false;
-      status('이제 게임을 골라 [시작]을 눌러 주세요.');
+    $('camOverlay').textContent = left > 0 ? left : '';
+    if (left > 0) return;
+    clearInterval(tm);
+    const data = calibrating.data; calibrating = null;
+    if (data.length < 30){
+      $('calTitle').textContent = '얼굴이 잘 안 보였어요';
+      $('calSub').textContent = '밝은 곳에서 얼굴을 가운데에 두면 다시 재요.';
+      setTimeout(waitFaceThenCalibrate, 1500);
+      return;
     }
+    // 튀는 값 위 5%는 빼고 흔들림을 잼
+    const sd = xs => {
+      const a = xs.map(Math.abs).sort((p, q) => p - q), cut = a[Math.floor(a.length * 0.95)];
+      const k = xs.filter(x => Math.abs(x) <= cut), m = k.reduce((p, q) => p + q, 0) / k.length;
+      return Math.max(1e-6, Math.sqrt(k.reduce((p, q) => p + (q - m) ** 2, 0) / k.length));
+    };
+    for (let i = 1; i < SIG.length; i++){ SIG[i].sd = sd(data.map(d => d[i])); SIG[i].state = 'low'; }
+    XS.forEach((x, j) => { x.sd = sd(data.map(d => d[6 + j])); });
+    // 종합 신호도 가만히 있을 때 흔들림으로 다시 나눠서, 선 높이를 '잡음의 몇 배'로 맞춤
+    const sds = SIG.map(q => q.sd).concat(XS.map(q => q.sd));
+    SIG[0].sd = sd(data.map(d => fuseRaw(d.map((x, i) => i ? x / sds[i] : 0)))); SIG[0].state = 'low';
+    $('countBtn').disabled = false;
+    startCheck();
   }, 1000);
+}
+// 3번 씹어 보기: 입 다물고도 세어지는지 바로 확인
+let check = null;
+function startCheck(){
+  $('setupB').hidden = true; $('setupC').hidden = false;
+  $('checkNext').hidden = true;
+  $('checkTip').textContent = '구미 없이 빈 입으로 해도 돼요. 아랫입술만 움직여도 세어져요.';
+  check = {n:0, t0:performance.now()};
+  [...$('chewDots').children].forEach(d => d.classList.remove('on'));
+  setTimeout(() => { if (check && check.n < 3) $('checkTip').textContent = '잘 안 세지면 [살살 씹어도 세기]를 눌러 보세요.'; }, 7000);
+}
+function checkChew(){
+  check.n++;
+  [...$('chewDots').children].forEach((d, i) => d.classList.toggle('on', i < check.n));
+  if (audio) tone(audio.currentTime, 660 + check.n * 110, 0.12, 0.2);
+  if (check.n >= 3){
+    check = null; camReady = true; renderCamChip();
+    $('checkTip').textContent = '잘 세어져요! [다음]을 누르거나, 마음에 안 들면 다시 재요.';
+    $('checkNext').hidden = false;
+  }
+}
+// 카메라 끄기: 준비 화면의 카메라 화면 안 버튼. 켜기는 아래 [카메라 켜기]
+function renderCamChip(){
+  const busy = $('camBtn').disabled && !camOn;
+  $('camSw').setAttribute('aria-checked', String(camOn || busy));
+  $('camState').textContent = camOn ? '켜짐' : busy ? '켜는 중' : '꺼짐';
+  $('camState').classList.toggle('on', camOn);
+  // 카메라가 꺼져 있으면 언제든 앞으로 갈 수 있게: 측정을 마쳤으면 [다음], 아니면 [카메라 없이 하기]
+  $('noCamBtn').hidden = camOn || busy;
+  $('noCamBtn').textContent = camReady ? '다음' : '카메라 없이 하기';
+}
+function stopCam(){
+  const st = video.srcObject;
+  if (st) st.getTracks().forEach(t => t.stop());
+  video.srcObject = null;
+  // 3번 씹어 보기까지 마쳤으면 camReady는 그대로 둠: 꺼도 이어서 진행
+  camOn = false; check = null; calibrating = null; mouthOpen = 0; lipBase = null;
+  camMode('cam-off');
+  $('setupA').hidden = false; $('setupB').hidden = true; $('setupC').hidden = true;
+  $('camBtn').disabled = false; $('camOverlay').textContent = '';
+  status(camReady ? '측정은 끝났어요. 카메라 없이 이어서 해요.' : '');
+  renderCamChip(); if (screen === 'home') renderHome();
+}
+$('camSw').onclick = () => {
+  unlockAudio();
+  if (camOn){ stopCam(); sfx('back'); return; }
+  if (!$('camBtn').disabled) $('camBtn').click();
 };
+$('checkNext').onclick = () => { camReady = true; check = null; sfx('select'); go('song'); };
+$('noCamBtn').onclick = () => { unlockAudio(); sfx('select'); go('song'); };
+// 세는 기준 다섯 칸: 숫자(잡음의 몇 배) 대신 '얼마나 세게 씹어야 세는지'로 보여 줌
+const SENS_STEPS = [1.5, 1.85, 2.25, 2.85, 3.6];
+const SENS_NAMES = ['아주 살살 씹어도 셈', '살살 씹어도 셈', '보통', '꾹 씹어야 셈', '아주 꾹 씹어야 셈'];
+const sensStep = () => { let b = 0; SENS_STEPS.forEach((v, i) => { if (Math.abs(v - sens()) < Math.abs(SENS_STEPS[b] - sens())) b = i; }); return b; };
+function setSens(v){
+  $('sens').value = Math.max(0.5, Math.min(5, v)); store.set('kk_sens5', sens());
+  const i = sensStep();
+  $('sensVal').textContent = SENS_NAMES[i] + ' (잡음의 ' + sens() + '배)';
+  $('sensName').textContent = '지금: ' + SENS_NAMES[i];
+  [...$('sensLv').children].forEach((d, k) => d.classList.toggle('on', k === i));
+}
+$('sensUp').onclick = () => { setSens(SENS_STEPS[Math.max(0, sensStep() - 1)]); sfx('tap'); $('checkTip').textContent = '이제 더 살살 씹어도 세요.'; };
+$('sensDown').onclick = () => { setSens(SENS_STEPS[Math.min(4, sensStep() + 1)]); sfx('tap'); $('checkTip').textContent = '이제 꾹 씹을 때만 세요.'; };
+$('recal').onclick = () => { check = null; camReady = false; $('checkNext').hidden = true; waitFaceThenCalibrate(); };
 
-// ---- 3단계: 10번 세기 ----
+// ---- 개발용 ----
+const SIG_NAMES = ['종합 (여러 움직임)', '아랫입술 아래', '턱 위치', '입술 간격', '턱 벌림', '아랫입술만'];
 $('countBtn').onclick = () => {
   SIG.forEach((s, i) => { s.count = 0; s.peaks = []; $('c' + i).textContent = 0; $('r' + i).textContent = '세는 중'; });
   $('countVerdict').textContent = '';
@@ -329,31 +1300,395 @@ $('countStop').onclick = () => {
     const gap = Math.abs(s.count - 10);
     if (gap < bestGap){ bestGap = gap; best = i; }
   });
-  const names = ['입술+턱 합산', '아랫입술 위치', '턱 위치', '입술 간격', '턱 벌림'];
   $('countVerdict').textContent = bestGap <= 1
-    ? names[best] + ' 신호가 ' + SIG[best].count + '번으로 가장 정확했어요. 판정 신호를 이것으로 바꿨어요.'
-    : '다섯 가지 모두 10번과 차이가 커요. 민감도를 바꾸거나, 조명을 밝게 하고 얼굴을 정면으로 둔 뒤 다시 해 보세요.';
+    ? SIG_NAMES[best] + ' 신호가 ' + SIG[best].count + '번으로 가장 정확했어요. 판정 신호를 이것으로 바꿨어요.'
+    : '여섯 가지 모두 10번과 차이가 커요. 민감도를 바꾸거나, 조명을 밝게 하고 얼굴을 정면으로 둔 뒤 다시 해 보세요.';
   if (bestGap <= 1){ $('sigSel').value = String(best); markSel(); }
 };
+function markSel(){ document.querySelectorAll('.count').forEach(el => el.classList.toggle('sel', Number(el.dataset.i) === sel())); }
+$('sigSel').onchange = markSel; markSel();
+$('sens').oninput = () => setSens(sens());
+setSens(sens());
+$('hideFace').onchange = () => { const h = $('hideFace').checked; video.style.visibility = h ? 'hidden' : 'visible'; $('avatar').hidden = !h; };
+addEventListener('keydown', e => {
+  if (e.code !== 'Space' || /INPUT|SELECT|BUTTON|SUMMARY/.test(document.activeElement.tagName)) return;
+  e.preventDefault();
+  onChew(performance.now());
+});
 
-function markSel(){
-  document.querySelectorAll('.count').forEach(el => el.classList.toggle('sel', Number(el.dataset.i) === sel()));
+// ---- 한 판 ----
+let game = null, startChews = [], todayDone = false;
+const IDLE = 3000;   // 3초 동안 안 씹으면 물어봄
+// 콤보 배율: 5번 연속 ×1.5 · 10번 ×2 · 20번 ×3
+const multOf = c => c >= 20 ? 3 : c >= 10 ? 2 : c >= 5 ? 1.5 : 1;
+
+function enterPlay(){
+  $('goBtn').hidden = false; $('doneBtn').hidden = true; $('notYetBtn').hidden = true; $('askHint').hidden = true;
+  startChews = [];
 }
-$('sigSel').onchange = markSel;
-markSel();
-$('sens').oninput = () => { $('sensVal').textContent = '잡음의 ' + sens() + '배를 넘으면 씹기로 인정'; };
-const DESC = {
-  follow: '캐릭터가 네 번 먼저 씹으면, 이어서 네 번 따라 씹어요. 캐릭터 입이 닫히는 순간이 박자예요.',
-  fall: '위에서 내려오는 젤리가 아래 동그라미에 닿는 순간 씹어요. 네 마디마다 한 마디는 쉬어 가요.'
-};
-$('mode').onchange = () => { $('modeDesc').textContent = DESC[$('mode').value]; };
-$('hideFace').onchange = () => {
-  const hide = $('hideFace').checked;
-  video.style.visibility = hide ? 'hidden' : 'visible';
-  $('avatar').hidden = !hide;
-};
+function startGame(firstChews){
+  if (game) return;
+  unlockAudio();
+  if (!audio) return;
+  if (screen !== 'play') go('play');
+  stopPreview();
+  const song = SONGS[pick.song], b = 60 / song.bpm;
+  const pat = LEVELS[pick.level].pat(song.off);
+  let gap = 4, maxGap = 0;
+  for (let i = 0; i < pat.length; i++){ const d = ((pat[(i + 1) % pat.length] - pat[i]) + 4) % 4 || 4; gap = Math.min(gap, d); maxGap = Math.max(maxGap, d); }
+  const idle = Math.max(IDLE, maxGap * b * 1000 + 1500);   // 느린 곡 · 쉬움에서 박자 사이가 3초쯤이라, 박자대로 씹는데 물어보지 않게
+  const win = Math.min(250, gap * b * 1000 / 2 - 20);     // 판정 범위: 이웃 박자와 겹치지 않게
+  const chewWin = Math.min(650, gap * b * 1000 * 0.55);    // 캐릭터 턱이 내려갔다 박자에 닫히는 시간
+  $('winInfo').textContent = '판정 범위 ±' + (win / 1000).toFixed(2) + '초';
+  const musicOut = audio.createGain(); musicOut.gain.value = 1; musicOut.connect(audio.destination);
+  const now = performance.now();
+  game = {
+    stage:pick.stage, mode:pick.mode, song:pick.song, level:pick.level, target:STAGES[pick.stage].target,
+    b, win, chewWin, idle, musicOut, aStart:audio.currentTime + 0.15, nextBar:1, notes:[],
+    phase:'play', reached:false, count:firstChews, combo:0, maxCombo:0, score:0, startedAt:now, lastChew:now,
+    side:1, chewAt:0, pops:[], sparks:[], banner:null, shakeAt:0, nodAt:0,
+    comment:{text:'출발!', t:now}, askChews:[], resumeAt:0, askFrom:'play', swallowAt:0,
+  };
+  tone(game.aStart, 660, 0.08, 0.25); tone(game.aStart + b, 880, 0.08, 0.25);   // 하나, 둘
+  schedule();
+  speak('출발!');
+  $('goBtn').hidden = true; $('doneBtn').hidden = false; $('notYetBtn').hidden = true; $('askHint').hidden = true;
+  updateFlow();
+}
+const barStart = n => game.aStart + 2 * game.b + (n - 1) * 4 * game.b;
+const toPerf = at => performance.now() + (at - audio.currentTime) * 1000;
+function schedule(){
+  if (audio) schedulePreview();
+  if (!game || !audio) return;
+  while (barStart(game.nextBar) < audio.currentTime + 1.6){ scheduleBar(game.nextBar); game.nextBar++; }
+}
+setInterval(schedule, 100);
+const isGuideBar = n => game.mode === 'follow' && n % 2 === 1;   // 따라 하기: 홀수 마디 = 캐릭터 차례
+function scheduleBar(n){
+  const g = game, t0 = barStart(n), b = g.b;
+  playGroup(g.song, n, t0, g.musicOut);
+  // 목표를 채운 뒤에도 박자 안내는 계속. 점수만 안 셈 (free)
+  const guide = isGuideBar(n), free = g.reached;
+  LEVELS[g.level].pat(SONGS[g.song].off).forEach(p => {
+    const at = t0 + p * b;
+    g.notes.push({t:toPerf(at), guide, bar:n, hit:false, missed:false, free});
+    tone(at, guide ? 988 : 740, guide ? 0.1 : 0.05, (guide ? 0.18 : 0.08) * (free ? 0.7 : 1), g.musicOut);
+  });
+}
+function barAt(now){
+  if (!game) return 0;
+  const first = toPerf(barStart(1));
+  return now < first ? 0 : 1 + Math.floor((now - first) / (4 * game.b * 1000));
+}
 
-// ---- 그래프 ----
+let lastChewT = 0;
+function onChew(t){
+  lastChewT = t;
+  if (screen === 'setup' && check){ checkChew(); return; }
+  if (!game){
+    // 처음 화면이나 한 판 화면에서 두 번 씹으면 시작 (말할 때 잘못 시작하지 않게)
+    if (screen !== 'home' && screen !== 'play') return;
+    if (screen === 'home' && !camReady) return;
+    startChews = startChews.filter(x => t - x < 2500);
+    startChews.push(t);
+    if (startChews.length >= 2){ startChews = []; startGame(2); }
+    return;
+  }
+  if (game.phase === 'ask'){
+    game.askChews = game.askChews.filter(x => t - x < 3000);
+    game.askChews.push(t);
+    if (game.askChews.length >= 4 && !game.resumeAt) game.resumeAt = t + 1200;   // 말소리와 구분하려고 잠깐 기다림
+    return;
+  }
+  countChew(t, true);
+}
+const MILESTONE = c => c === 5 || c === 10 || c === 20 || (c > 20 && c % 10 === 0);
+function countChew(t, judge){
+  const g = game;
+  g.count++; g.lastChew = t; g.side = -g.side; g.chewAt = t;
+  let best = null;
+  if (judge) g.notes.forEach(n => {
+    if (n.guide || n.hit) return;
+    const off = t - latency - n.t;
+    if (Math.abs(off) <= g.win && (!best || Math.abs(off) < Math.abs(best.off))) best = {n, off};
+  });
+  if (best && g.reached){
+    // 목표 뒤: 박자 맞추면 반응만, 점수 · 콤보는 안 셈
+    best.n.hit = true;
+    g.pops.push({t, text:'좋아요', big:true});
+    for (let k = 0; k < 8; k++) g.sparks.push({t, a: k / 8 * Math.PI * 2 + Math.random() * .4, sp: 40 + Math.random() * 30, size: 4 + Math.random() * 4, c: k % 2});
+    sfx('hit', {combo:0, exact:false});
+  } else if (best){
+    best.n.hit = true;
+    const exact = Math.abs(best.off) <= g.win * 0.4;
+    g.combo++; g.maxCombo = Math.max(g.maxCombo, g.combo);
+    const mult = multOf(g.combo), pts = Math.round((exact ? 100 : 60) * mult);
+    g.score += pts;
+    g.pops.push({t, text: exact ? '나이스!' : '굿!', sub:'+' + pts, big:true});
+    const nSp = 8 + Math.min(16, g.combo);
+    for (let k = 0; k < nSp; k++) g.sparks.push({t, a: k / nSp * Math.PI * 2 + Math.random() * .4, sp: 40 + Math.random() * 40 + g.combo * 2, size: 5 + Math.random() * 5, c: k % 2});
+    sfx('hit', {combo:g.combo, exact});
+    if (MILESTONE(g.combo)){
+      g.banner = {t, n:g.combo, mult}; g.shakeAt = t;
+      for (let k = 0; k < 36; k++) g.sparks.push({t, a: k / 36 * Math.PI * 2, sp: 110 + Math.random() * 70, size: 6 + Math.random() * 6, c: k % 2});
+      setTimeout(() => sfx('combo'), 90);
+    }
+  } else {
+    g.pops.push({t, text:'꼭!', big:false});
+  }
+  if (!g.reached){
+    if (g.count === Math.ceil(g.target / 2)) say('절반 왔어요!');
+    else if (g.count === g.target - 5) say('거의 다 왔어요!');
+    if (g.count >= g.target) reach(t);
+  }
+}
+function say(text){ if (game) game.comment = {text, t:performance.now()}; }
+function reach(t){
+  const g = game;
+  g.reached = true; g.phase = 'swallow'; g.swallowAt = t;
+  say('꼭꼭 잘 씹었어요');
+  speak(g.target + '번 다 채웠어요!');
+  const at = audio.currentTime; [523, 659, 784, 1046].forEach((f, i) => tone(at + i * 0.09, f, 0.25, 0.2));
+  for (let k = 0; k < 24; k++) g.sparks.push({t, a: k / 24 * Math.PI * 2, sp: 70 + Math.random() * 50, size: 6 + Math.random() * 5, c: k % 2});
+  updateFlow();
+}
+function ask(){
+  const g = game;
+  g.askFrom = g.phase; g.phase = 'ask'; g.askChews = []; g.resumeAt = 0; g.nodAt = 0;
+  nod.state = 'rest'; nod.base = null;
+  say('다 드셨어요?');
+  speak('다 드셨어요?');
+  $('notYetBtn').hidden = false;
+  askHint(); listen(true); updateFlow();
+}
+function askHint(){
+  const h = $('askHint');
+  h.hidden = !(game && game.phase === 'ask');
+  h.textContent = '고개를 끄덕이거나, 버튼을 누르거나' + (srBlocked ? '' : ', "다 먹었어"라고 말해요') + '. 아직이면 다시 씹으면 돼요.';
+}
+function resume(chews){
+  const g = game;
+  g.phase = g.askFrom; g.resumeAt = 0; g.lastChew = performance.now();
+  listen(false);
+  $('notYetBtn').hidden = true; $('askHint').hidden = true;
+  say('좋아요, 계속 꼭꼭!');
+  for (let k = 0; k < chews; k++) countChew(performance.now(), false);
+  updateFlow();
+}
+// 끄덕임을 알아들으면 화면에 바로 보여 주고 잠깐 뒤 끝
+function onNod(){
+  const g = game;
+  if (!g || g.phase !== 'ask' || g.nodAt) return;
+  g.nodAt = performance.now();
+  say('끄덕! 알겠어요');
+  sfx('nod');
+  setTimeout(() => { if (game === g) finish('nod'); }, 800);
+}
+$('doneBtn').onclick = () => finish('button');
+$('notYetBtn').onclick = () => { if (game && game.phase === 'ask') resume(0); };
+$('goBtn').onclick = () => startGame(0);
+$('quitBtn').onclick = () => { if (game) quitGame(); go('home'); };
+
+function tick(now){
+  const g = game;
+  if (!g) return;
+  g.notes.forEach(n => {
+    if (!n.guide && !n.hit && !n.missed && now > n.t + latency + g.win){
+      n.missed = true;
+      if (n.free) return;
+      if (g.combo >= 3){ sfx('miss'); g.pops.push({t:now, text:'콤보 끊김', big:false}); }
+      g.combo = 0;
+    }
+  });
+  if (g.phase === 'ask'){ if (g.resumeAt && now > g.resumeAt) resume(g.askChews.length); return; }
+  // 캐릭터 차례에는 쉬어도 되니까, 내 차례에서만 3초를 잼 (목표 채운 뒤도 같음)
+  const bar = barAt(now);
+  if (bar >= 1 && !isGuideBar(bar)){
+    const myStart = toPerf(barStart(bar));
+    if (now - Math.max(g.lastChew, myStart) > g.idle) ask();
+  }
+}
+function stopMusic(g){
+  const at = audio.currentTime;
+  g.musicOut.gain.cancelScheduledValues(at); g.musicOut.gain.setValueAtTime(g.musicOut.gain.value, at); g.musicOut.gain.linearRampToValueAtTime(0, at + 0.6);
+  setTimeout(() => g.musicOut.disconnect(), 800);
+}
+function quitGame(){ const g = game; game = null; listen(false); stopMusic(g); }
+function finish(how){
+  const g = game;
+  if (!g) return;
+  game = null; listen(false); stopMusic(g);
+  speak('잘 드셨어요! 한 판 끝.');
+  showResult(g, how);
+}
+
+// ---- 결과: 내 단계 · 곡과 레벨 · 점수 ----
+const fmt = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+function addToday(){
+  const days = new Set(store.get('kk_days', []));
+  days.add(fmt(new Date()));
+  store.set('kk_days', [...days].sort().slice(-400));
+}
+let autoSix = null, countUp = null, shareText = '';
+function showResult(g){
+  addToday(); addMeal();
+  const st = STAGES[g.stage], song = SONGS[g.song], lv = LEVELS[g.level];
+  $('resStage').innerHTML = SVG[st.shape](css(st.color));
+  $('resStage').append(st.name + ' 단계');
+  $('resSong').textContent = song.name + ' · ' + lv.name;
+  shareText = `오늘 꼭꼭 한 판 완주! ${song.name} ${lv.name} ${g.score.toLocaleString('ko-KR')}점 · ${st.name} 단계`;
+  todayDone = true;
+  go('result');
+  // 점수가 촤르륵 올라감
+  const total = g.score, t0 = performance.now(), dur = total ? 1200 : 0;
+  $('resScore').textContent = '0';
+  clearInterval(countUp);
+  countUp = setInterval(() => {
+    const k = dur ? Math.min(1, (performance.now() - t0) / dur) : 1;
+    const v = Math.round(total * (1 - (1 - k) ** 3));
+    $('resScore').textContent = v.toLocaleString('ko-KR');
+    if (k < 1) sfx('count', k * 100);
+    else { clearInterval(countUp); if (total) sfx('select'); }
+  }, 60);
+  // 자랑은 고를 때만. 안 누르면 6초 뒤 666 풀기로
+  let left = 6;
+  $('resInfo').textContent = left + '초 뒤 666 풀기로 넘어가요';
+  clearInterval(autoSix);
+  autoSix = setInterval(() => {
+    left--;
+    if (left > 0){ $('resInfo').textContent = left + '초 뒤 666 풀기로 넘어가요'; return; }
+    clearInterval(autoSix); $('resInfo').textContent = ''; start666();
+  }, 1000);
+}
+$('shareBtn').onclick = async () => {
+  clearInterval(autoSix);
+  try {
+    if (navigator.share){ await navigator.share({title:'꼭꼭 한 판', text:shareText}); $('resInfo').textContent = '보냈어요!'; }
+    else { await navigator.clipboard.writeText(shareText); $('resInfo').textContent = '복사했어요. 카톡에 붙여 넣어 보내요.'; }
+  } catch { $('resInfo').textContent = '보내기를 취소했어요.'; }
+};
+$('toSixBtn').onclick = () => start666();
+$('againBtn').onclick = () => { sfx('select'); go('song'); };
+
+// ---- 666 풀기: 캐릭터가 말풍선으로 알려 주고, 옆 동그라미에 입 속을 확대해 보여 줌 ----
+let six = null;
+function start666(){
+  clearInterval(autoSix);
+  go('six');
+  $('sixHome').hidden = true; $('sixSkip').hidden = false;
+  speak('저를 따라 해요. 혀끝을 윗앞니 뒤에 붙이고, 여섯을 세요.');
+  six = {t0:performance.now() + 4000, lastSec:-1, lastRep:-1, timer:setInterval(sixTick, 100), done:false};
+  $('sixInfo').textContent = '입술은 다물고, 혀끝을 윗앞니 뒤에 붙여요';
+}
+function sixState(now){
+  if (!six) return {phase:'done', rep:6, p:1, lift:0};
+  if (six.done) return {phase:'done', rep:6, p:1, lift:0};
+  const el = (now - six.t0) / 1000;
+  if (el < 0) return {phase:'ready', left:Math.ceil(-el), rep:0, p:0, lift:Math.max(0, 1 + el / 0.6)};
+  const rep = Math.floor(el / 8), inCyc = el - rep * 8;   // 6초 버티고 2초 쉼
+  if (rep >= 6) return {phase:'done', rep:6, p:1, lift:0};
+  if (inCyc < 6) return {phase:'hold', rep, sec:Math.floor(inCyc), p:inCyc / 6, lift:1};
+  return {phase:'rest', rep, p:1, lift:Math.max(0, 1 - (inCyc - 6) / 0.4)};
+}
+function sixTick(){
+  const s = sixState(performance.now());
+  if (s.phase === 'done'){ end666(); return; }
+  if (s.phase === 'hold'){
+    $('sixInfo').textContent = (s.rep + 1) + '번째 · 입술은 다물고 꾹';
+    if (s.sec !== six.lastSec && audio){ six.lastSec = s.sec; tone(audio.currentTime, s.sec === 0 ? 880 : 620, 0.06, 0.12); }
+    if (s.rep !== six.lastRep){ six.lastRep = s.rep; if (s.rep > 0) speak(['', '두 번째', '세 번째', '네 번째', '다섯 번째', '마지막'][s.rep]); }
+  } else if (s.phase === 'rest'){
+    $('sixInfo').textContent = s.rep < 5 ? '혀를 편하게 내려요' : '';
+    six.lastSec = -1;
+  }
+}
+function end666(){
+  if (!six || six.done) return;
+  clearInterval(six.timer); six.done = true;
+  $('sixInfo').textContent = '오늘 한 판 완료! 다음 끼니에 또 만나요.';
+  speak('잘했어요! 오늘 한 판 완료!');
+  if (audio) [523, 659, 784, 1046].forEach((f, i) => tone(audio.currentTime + i * 0.1, f, 0.3, 0.18));
+  $('sixSkip').hidden = true; $('sixHome').hidden = false;
+}
+function stop666(){ if (six && six.timer) clearInterval(six.timer); six = null; }
+$('sixSkip').onclick = () => go('home');
+$('sixHome').onclick = () => go('home');
+
+// 옆에서 본 입 속 (v3 그림을 흑백으로 다시 씀)
+const MOUTH = {
+  skin:   new Path2D('M300 0 H150 C116 0 100 26 98 54 C97 64 84 72 76 80 C72 86 78 90 86 91 C84 96 88 99 92 100 L92 108 C88 110 88 114 92 117 C90 125 92 133 100 139 C114 150 124 170 132 190 H300 Z'),
+  inside: new Path2D('M100 101 C130 92 200 90 262 102 L262 152 C200 154 142 150 108 130 C100 124 98 112 100 101 Z'),
+  palate: new Path2D('M114 96 C142 84 202 82 262 92'),
+  tongue: new Path2D('M116 101 C126 96 142 100 162 106 C202 114 232 116 262 118 L262 152 C222 152 172 150 132 138 C118 132 110 122 112 112 C112 107 113 103 116 101 Z'),
+  toothU: new Path2D('M100 94 L113 94 L111 113 L102 113 Z'),
+  toothL: new Path2D('M102 117 L111 117 L113 133 L104 133 Z'),
+  lips:   new Path2D('M92 100 C96 98 100 99 100 104 C100 108 96 109 92 108 Z M92 109 C96 109 101 110 101 114 C101 118 96 119 92 117 Z'),
+};
+function drawMouthInset(g, x, y, R, lift){
+  g.save();
+  g.beginPath(); g.arc(x, y, R, 0, Math.PI * 2); g.clip();
+  g.fillStyle = css('--panel'); g.fillRect(x - R, y - R, R * 2, R * 2);
+  g.translate(x, y); g.scale(R / 40, R / 40); g.translate(-120, -112);
+  g.fillStyle = '#ffe2bf'; g.fill(MOUTH.skin); g.strokeStyle = css('--muted'); g.lineWidth = 2; g.stroke(MOUTH.skin);
+  g.fillStyle = '#7a2e3a'; g.fill(MOUTH.inside);
+  g.strokeStyle = '#f3b6a8'; g.lineWidth = 5; g.lineCap = 'round'; g.stroke(MOUTH.palate);
+  // 혀: 쉴 때는 아래로, 버틸 때는 끝이 윗앞니 뒤에 붙음
+  g.save(); g.translate(0, (1 - lift) * 15); g.fillStyle = '#ff8fa3'; g.fill(MOUTH.tongue); g.restore();
+  g.fillStyle = '#ffffff'; g.strokeStyle = '#333'; g.lineWidth = 1.5; g.fill(MOUTH.toothU); g.stroke(MOUTH.toothU); g.fill(MOUTH.toothL); g.stroke(MOUTH.toothL);
+  g.fillStyle = '#e47c7c'; g.fill(MOUTH.lips);
+  if (lift > 0.9){ g.strokeStyle = css('--accent'); g.lineWidth = 3; g.beginPath(); g.arc(116, 102, 9, 0, Math.PI * 2); g.stroke(); }
+  g.restore();
+  g.strokeStyle = css('--accent'); g.lineWidth = 3; g.beginPath(); g.arc(x, y, R, 0, Math.PI * 2); g.stroke();
+}
+function bubble(g, x, y, w, h, tailX, tailY){
+  g.fillStyle = css('--panel');
+  g.beginPath(); g.roundRect(x - w / 2, y - h / 2, w, h, 18); g.fill();
+  g.beginPath(); g.moveTo(tailX - 11, y + h / 2 - 2); g.lineTo(tailX, tailY); g.lineTo(tailX + 11, y + h / 2 - 2); g.closePath(); g.fill();
+}
+function drawSix(now){
+  if (screen !== 'six') return;
+  const [g, w, h] = fit($('sixStage'));
+  g.clearRect(0, 0, w, h);
+  const s = sixState(now), ink = css('--fg'), muted = css('--muted'), accent = css('--accent'), good = css('--good');
+  const r = Math.min(80, w * 0.21), cx = w * 0.4, cy = Math.max(r + 130, h * 0.42);
+  // 진행 고리
+  g.lineCap = 'round';
+  g.strokeStyle = css('--line'); g.lineWidth = 9; g.beginPath(); g.arc(cx, cy + 6, r + 26, 0, Math.PI * 2); g.stroke();
+  if (s.p > 0){ g.strokeStyle = accent; g.beginPath(); g.arc(cx, cy + 6, r + 26, -Math.PI / 2, -Math.PI / 2 + s.p * Math.PI * 2); g.stroke(); }
+  // 캐릭터: 버틸 때는 입을 꼭 다물고, 쉴 때 · 끝나면 웃음
+  const hold = s.phase === 'hold';
+  drawChar(g, cx, cy + (hold ? 0 : Math.sin(now / 400) * 3), r, {happy: s.phase === 'rest' || s.phase === 'done', press: hold, side: 0});
+  // 말풍선
+  const bw = Math.min(w - 32, 250), by = cy - r - 80;
+  bubble(g, w / 2, by, bw, 74, cx + 10, by + 37 + 18);
+  g.textAlign = 'center'; g.fillStyle = ink;
+  if (s.phase === 'ready'){
+    F(g, '600', 18); g.fillText('저를 따라 해요', w / 2, by - 6);
+    F(g, '500', 14); g.fillStyle = muted; g.fillText(s.left + '초 뒤 시작 · 혀끝을 윗앞니 뒤에', w / 2, by + 18);
+  } else if (hold){
+    g.fillStyle = accent; F(g, '600', 34); g.fillText(String(6 - s.sec), w / 2 - 34, by + 12); g.fillStyle = ink;
+    F(g, '600', 15); g.textAlign = 'left'; g.fillText('혀끝 꾹,', w / 2 - 6, by - 2); g.fillStyle = muted; g.fillText('입술은 다물고', w / 2 - 6, by + 18);
+  } else if (s.phase === 'rest'){
+    F(g, '600', 22); g.fillText('쉬어요', w / 2, by + 8);
+  } else {
+    F(g, '600', 20); g.fillText('잘했어요! 오늘 끝', w / 2, by + 8);
+  }
+  // 입 속 확대
+  const R = Math.min(70, w * 0.19), ix = Math.min(w - R - 8, cx + r + 66), iy = cy + r + 46;
+  g.strokeStyle = muted; g.lineWidth = 1.5; g.setLineDash([4, 4]);
+  g.beginPath(); g.moveTo(cx + r * 0.25, cy + r * 0.45); g.lineTo(ix - R * 0.8, iy - R * 0.6); g.stroke(); g.setLineDash([]);
+  drawMouthInset(g, ix, iy, R, s.lift);
+  F(g, '600', 12); g.fillStyle = muted; g.textAlign = 'center'; g.fillText('옆에서 본 입 속', ix, iy + R + 18);
+  // 6번 중 몇 번째
+  const dy = Math.min(h - 18, iy + R + 50);
+  for (let i = 0; i < 6; i++){
+    const x = w / 2 + (i - 2.5) * 26, on = i < s.rep || (i === s.rep && s.phase === 'rest') || s.phase === 'done';
+    g.beginPath(); g.arc(x, dy, 8, 0, Math.PI * 2);
+    if (on){ g.fillStyle = good; g.fill(); } else { g.strokeStyle = muted; g.lineWidth = 2; g.stroke(); }
+  }
+}
+
+// ---- 그리기 ----
 function fit(cv){
   const r = cv.getBoundingClientRect(), d = devicePixelRatio || 1;
   const w = Math.round(r.width * d), h = Math.round(r.height * d);
@@ -361,25 +1696,346 @@ function fit(cv){
   const g = cv.getContext('2d'); g.setTransform(d, 0, 0, d, 0, 0);
   return [g, r.width, r.height];
 }
+function shapePath(g, kind, x, y, s){
+  g.beginPath();
+  if (kind === 'circle') g.arc(x, y, s, 0, Math.PI * 2);
+  else if (kind === 'heart'){
+    g.moveTo(x, y + s * 0.95);
+    g.bezierCurveTo(x - s * 1.7, y - s * 0.1, x - s * 0.7, y - s * 1.35, x, y - s * 0.45);
+    g.bezierCurveTo(x + s * 0.7, y - s * 1.35, x + s * 1.7, y - s * 0.1, x, y + s * 0.95);
+  } else {
+    for (let k = 0; k < 10; k++){
+      const a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? s * 0.45 : s * 1.1;
+      g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr);
+    }
+  }
+  g.closePath();
+}
+// 캐릭터: 입은 다문 채 아래턱이 내려갔다 닫힘. 씹는 쪽 볼이 둥글게 볼록 튀어나옴
+function drawChar(g, cx, cy, r, o = {}){
+  const mouth = o.mouth || 0, open = Math.max(o.open || 0, mouth), side = o.side || 0, face = css('--face'), ink = '#111111';
+  const jaw = r * (1 + 0.16 * open);
+  const puff = side ? (o.chewing ? 0.55 + 0.45 * (1 - open) : 0.6) : 0;   // 닫힐 때 가장 볼록
+  g.fillStyle = face;
+  g.beginPath(); g.arc(cx, cy, r, Math.PI, 0); g.ellipse(cx, cy, r, jaw, 0, 0, Math.PI); g.fill();
+  if (side){
+    const bx = cx + side * r * (0.62 + 0.14 * puff), by = cy + r * 0.34 + open * r * 0.08, br = r * (0.3 + 0.12 * puff);
+    g.beginPath(); g.arc(bx, by, br, 0, Math.PI * 2); g.fill();
+  }
+  // 볼 터치: 씹는 쪽이 더 크고 진함
+  g.fillStyle = css('--blush');
+  [-1, 1].forEach(d => {
+    const on = d === side;
+    g.globalAlpha = on ? 0.8 : 0.55;
+    g.beginPath(); g.ellipse(cx + d * r * (on ? 0.6 + 0.12 * puff : 0.52), cy + r * (on ? 0.24 : 0.14), r * (on ? 0.16 : 0.12), r * (on ? 0.1 : 0.075), 0, 0, Math.PI * 2); g.fill();
+  });
+  g.globalAlpha = 1;
+  g.fillStyle = ink; g.strokeStyle = ink; g.lineCap = 'round'; g.lineWidth = Math.max(3, r * 0.07);
+  if (o.happy){
+    [-1, 1].forEach(d => { g.beginPath(); g.arc(cx + d * r * 0.34, cy - r * 0.14, r * 0.1, Math.PI * 1.1, Math.PI * 1.9); g.stroke(); });
+  } else {
+    [-1, 1].forEach(d => { g.beginPath(); g.arc(cx + d * r * 0.34, cy - r * 0.2, r * 0.075, 0, Math.PI * 2); g.fill(); });
+  }
+  // 입: 다문 입술 한 줄이 턱과 같이 내려가고, 씹는 쪽으로 살짝 치우침
+  const my = cy + r * 0.42 + open * r * 0.14, mw = r * (o.happy ? 0.3 : o.press ? 0.22 : 0.2), mx = cx + side * r * 0.05;
+  g.lineWidth = Math.max(3, r * 0.06);
+  if (mouth > 0.08){
+    // 벌린 입: 사람 입이 벌어진 만큼 세로로 열림
+    const ry = r * (0.05 + 0.24 * mouth), rx = r * (0.2 + 0.04 * mouth), oy = my - r * 0.04 + ry * 0.5;
+    g.fillStyle = '#5a1f1a'; g.beginPath(); g.ellipse(mx, oy, rx, ry, 0, 0, Math.PI * 2); g.fill();
+    g.save(); g.clip();
+    g.fillStyle = css('--blush'); g.beginPath(); g.ellipse(mx, oy + ry * 0.75, rx * 0.75, ry * 0.55, 0, 0, Math.PI * 2); g.fill();
+    g.restore();
+  } else {
+    g.beginPath(); g.moveTo(mx - mw, my);
+    if (o.press) g.lineTo(mx + mw, my); else g.quadraticCurveTo(mx, my + (o.happy ? r * 0.16 : r * 0.07), mx + mw, my);
+    g.stroke();
+  }
+  if (o.swallow){
+    g.globalAlpha = 0.5 + 0.5 * Math.sin(performance.now() / 300);
+    g.fillStyle = css('--fg'); F(g, '600', Math.round(r * 0.28)); g.textAlign = 'center';
+    g.fillText('꿀꺽', cx, cy + jaw + r * 0.36);
+    g.globalAlpha = 1;
+  }
+}
+function star(g, x, y, s){
+  g.beginPath();
+  for (let k = 0; k < 8; k++){ const a = k * Math.PI / 4, rr = k % 2 ? s * .35 : s; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
+  g.closePath(); g.fill();
+}
+function userOpen(){
+  const last = hist[hist.length - 1];
+  return SIG[sel()].sd && last ? Math.max(0, Math.min(1, last.v[sel()] / 8)) : 0;
+}
+function drawAvatar(){
+  const cv = $('avatar');
+  if (cv.hidden) return;
+  const g = cv.getContext('2d'), w = cv.width, h = cv.height;
+  g.fillStyle = '#2b2c28'; g.fillRect(0, 0, w, h);
+  const open = userOpen();
+  drawChar(g, w / 2, h / 2 - 8, 60, {open, mouth:mouthOpen, chewing:open > 0.1});
+}
+// 턱 모양: 천천히 내려갔다가 박자에 '딱' 닫힘 (x: 0 → 1 = 박자)
+const jawCurve = x => x < 0.7 ? Math.sin(x / 0.7 * Math.PI / 2) : Math.cos((x - 0.7) / 0.3 * Math.PI / 2);
+// 캐릭터 턱: 다음 박자 전에 내렸다가 박자에 딱 닫힘
+function charMotion(now){
+  const g = game;
+  if (!g) return {open:0, chewing:false, side:0};
+  if (g.mode === 'match'){                                   // 내가 맞추기: 캐릭터 = 나
+    const open = userOpen(), recent = now - g.chewAt < 700;
+    return {open, mouth: mouthOpen, chewing: recent || open > 0.1, side: recent ? g.side : 0};
+  }
+  // 따라 하기: 캐릭터 차례에도, 내 차례에도 같은 박자로 씹음 (내 차례엔 같이 씹어 주는 느낌으로 조금 작게)
+  const bar = barAt(now), guideBar = isGuideBar(bar);
+  const next = g.notes.find(n => n.t > now - 30);
+  if (!next) return {open:0, chewing:false, side:0};
+  const idx = g.notes.indexOf(next), side = idx % 2 ? 1 : -1;
+  const c = g.chewWin, left = next.t - now;
+  if (left < 0 || left > c) return {open:0, chewing:true, side};
+  return {open: jawCurve(1 - left / c) * (guideBar ? 1 : 0.75), chewing:true, side};
+}
+function drawHome(now){
+  if (screen !== 'home') return;
+  const [g, w, h] = fit($('homeChar'));
+  g.clearRect(0, 0, w, h);
+  const t = now / 1000, open = Math.max(0, Math.sin(t * Math.PI * 1.2)), side = Math.floor(t * 0.6) % 2 ? 1 : -1;
+  const r = Math.min(70, h * 0.32), cx = w / 2, cy = h / 2;
+  drawChar(g, cx, cy, r, {open: open * 0.8, chewing:true, side, happy:todayDone});
+}
+// 모드 고르기: 카드 안에서 두 방식을 고른 곡 박자로 미리 보여 줌
+function demoBeat(now){
+  const b = 60 / SONGS[pick.song].bpm;
+  if (audio && preview) return (audio.currentTime - preview.t0) / b;
+  return now / 1000 / b;
+}
+// 준비 화면에서 카메라를 꺼도 내 캐릭터는 보임 (스페이스바 · 버튼으로 씹으면 따라 씹음)
+function drawMe(now){
+  if (screen !== 'setup' || camOn) return;
+  const [g, w, h] = fit($('meChar'));
+  g.clearRect(0, 0, w, h);
+  const k = now - lastChewT, open = k < 500 ? jawCurve(Math.min(1, k / 500)) * 0.8 : 0;
+  drawChar(g, w / 2, h / 2 - 6, Math.min(70, h * 0.3), {open, chewing: k < 600, side: k < 600 ? (Math.floor(lastChewT / 7) % 2 ? 1 : -1) : 0});
+}
+function drawModeDemos(now){
+  if (screen !== 'mode') return;
+  const beat = demoBeat(now), accent = css('--accent'), muted = css('--muted'), ink = css('--fg'), line = css('--line'), shColor = css(STAGES[pick.stage].color), shape = STAGES[pick.stage].shape;
+  // 박자에 닫히는 턱: 박자 0.35박 전부터 내려갔다가 박자에 닫힘
+  const jaw = ph => { const d = Math.ceil(ph) - ph; return d < 0.35 ? Math.sin(Math.PI * (1 - d / 0.35)) : 0; };
+  document.querySelectorAll('canvas[data-demo]').forEach(cv => {
+    const [g, w, h] = fit(cv);
+    g.clearRect(0, 0, w, h);
+    g.textAlign = 'center';
+    if (cv.dataset.demo === 'follow'){
+      // 4박은 캐릭터, 다음 4박은 나
+      const inBar = ((beat % 8) + 8) % 8, mine = inBar >= 4, r = 26;
+      const ax = w * 0.3, bx = w * 0.7, y = 56;
+      [[ax, '캐릭터', !mine], [bx, '나', mine]].forEach(([x, name, on]) => {
+        g.globalAlpha = on ? 1 : 0.35;
+        drawChar(g, x, y, r, {open: on ? jaw(beat) : 0, chewing:on, side: on ? (Math.floor(beat) % 2 ? 1 : -1) : 0});
+        g.globalAlpha = 1;
+        g.fillStyle = on ? accent : muted; F(g, '600', 13); g.fillText(name, x, y + r + 26);
+      });
+      // 박 표시 8칸
+      for (let i = 0; i < 8; i++){
+        const x = w / 2 + (i - 3.5) * 16, on = Math.floor(inBar) === i;
+        g.beginPath(); g.arc(x, h - 14, on ? 5 : 3.5, 0, Math.PI * 2);
+        g.fillStyle = on ? accent : (i < 4 ? muted : line); g.fill();
+      }
+      g.fillStyle = ink; F(g, '600', 13); g.fillText(mine ? '따라 씹기' : '먼저 씹어요', w / 2, 24);
+    } else {
+      // 가운데 줄로 구미가 내려와 입에 닿을 때 꼭
+      const r = 26, y = h - 40, mouth = y + r * 0.42, top = 8, x = w / 2;
+      g.fillStyle = css('--panel'); g.beginPath(); g.roundRect(x - 20, top, 40, mouth - top, 14); g.fill();
+      const ph = ((beat % 1) + 1) % 1, nearest = Math.round(beat), sinceHit = beat - Math.floor(beat);
+      drawChar(g, x, y, r, {open: jaw(beat) * 0.8, chewing:true, side: Math.floor(beat) % 2 ? 1 : -1, happy: sinceHit < 0.3});
+      for (let k = 0; k < 2; k++){
+        const left = (Math.ceil(beat) + k - beat) / 2;   // 2박 동안 내려옴
+        if (left > 1) continue;
+        g.fillStyle = shColor; shapePath(g, shape, x, mouth - left * (mouth - top - 10), 9); g.fill();
+      }
+      { const left = (Math.ceil(beat) - beat) / 2; if (left < 0.4){ const k = left / 0.4, yy = mouth - left * (mouth - top - 10); g.globalAlpha = 0.35 + 0.65 * (1 - k); g.strokeStyle = accent; g.lineWidth = 2; g.beginPath(); g.arc(x, yy, 11 + 14 * k, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; } }
+      if (sinceHit < 0.4){ g.globalAlpha = 1 - sinceHit / 0.4; g.fillStyle = css('--good'); F(g, '600', 16); g.fillText('꼭!', x + 58, y - 6); g.globalAlpha = 1; }
+      g.fillStyle = ink; F(g, '600', 13); g.textAlign = 'left'; g.fillText('구미가 입에', 14, 26); g.fillText('닿을 때 꼭!', 14, 44);
+    }
+  });
+}
+function drawStage(now){
+  if (screen !== 'play') return;
+  const [g, w, h] = fit($('stage'));
+  g.clearRect(0, 0, w, h);
+  const ink = css('--fg'), muted = css('--muted'), line = css('--line'), panel = css('--panel'), accent = css('--accent'), good = css('--good');
+  const st = STAGES[game ? game.stage : pick.stage], shColor = css(st.color);
+  const match = (game ? game.mode : pick.mode) === 'match';
+  const r = Math.min(76, w * 0.19);
+  const cx = w / 2, cy = h * 0.47;
+  g.textAlign = 'center';
+  if (!game){
+    const bob = Math.sin(now / 500) * 4;
+    drawChar(g, w / 2, cy + bob, r, {});
+    g.fillStyle = shColor; shapePath(g, st.shape, w / 2 + r + 30, cy + 26 + bob, 16); g.fill();
+    g.fillStyle = ink; F(g, '600', 22);
+    g.fillText('구미를 입에 넣고', w / 2, 236); g.fillText('씹기 시작하면 노래가 나와요', w / 2, 266);
+    g.fillStyle = muted; F(g, '500', 14);
+    g.fillText(st.name + ' 단계 ' + st.target + '번 · ' + MODES[pick.mode].name, w / 2, cy + r + 56);
+    g.fillText(SONGS[pick.song].name + ' · ' + LEVELS[pick.level].name, w / 2, cy + r + 78);
+    return;
+  }
+  const G = game, bar = barAt(now), guideBar = isGuideBar(bar), myBar = bar >= 1 && !guideBar;
+  // 콤보 기념 순간 화면 흔들림
+  if (now - G.shakeAt < 320){ const k = 1 - (now - G.shakeAt) / 320; g.translate((Math.random() - .5) * 12 * k, (Math.random() - .5) * 12 * k); }
+  // 위: 진행 막대 · 횟수 · 점수
+  const pw = w - 120, prog = Math.min(1, G.count / G.target);
+  g.fillStyle = line; g.beginPath(); g.roundRect(60, 66, pw, 12, 6); g.fill();
+  g.fillStyle = G.reached ? good : shColor; g.beginPath(); g.roundRect(60, 66, Math.max(12, pw * prog), 12, 6); g.fill();
+  g.textAlign = 'left'; g.fillStyle = ink; F(g, '600', 30);
+  g.fillText(Math.min(G.count, G.target) + ' / ' + G.target, 20, 126);
+  if (G.count > G.target){ const x1 = 20 + g.measureText(G.target + ' / ' + G.target).width + 10; g.fillStyle = good; F(g, '600', 16); g.fillText('+' + (G.count - G.target) + '번 더', x1, 124); }
+  g.fillStyle = muted; F(g, '600', 13);
+  g.fillText(SONGS[G.song].name + ' · ' + LEVELS[G.level].name, 20, 148);
+  g.fillStyle = ink; F(g, '600', 20);
+  const sTxt = G.score.toLocaleString('ko-KR') + '점';
+  g.fillText(sTxt, 20, 178);
+  const mult = multOf(G.combo);
+  if (mult > 1){
+    const x0 = 20 + g.measureText(sTxt).width + 8;
+    g.fillStyle = accent; g.beginPath(); g.roundRect(x0, 160, 46, 24, 12); g.fill();
+    g.fillStyle = '#fff'; F(g, '600', 14); g.textAlign = 'center'; g.fillText('×' + mult, x0 + 23, 177);
+  }
+  // 해설
+  const justReached = G.reached && now - G.swallowAt < 3000;
+  const label = G.phase === 'ask' ? '다 드셨어요?' : justReached ? G.target + '번 다 채웠어요!' : bar === 0 ? '하나, 둘…' : guideBar ? '캐릭터가 먼저 씹어요' : match ? '구미가 입에 닿을 때 꼭!' : '이제 따라 씹어요!';
+  g.textAlign = 'center'; g.fillStyle = myBar && !justReached && G.phase !== 'ask' ? accent : ink; F(g, '600', 24);
+  g.fillText(label, w / 2, 224);
+  if (now - G.comment.t < 1600 && G.comment.text !== label){
+    g.globalAlpha = 1 - (now - G.comment.t) / 1600; g.fillStyle = good; F(g, '600', 17);
+    g.fillText(G.comment.text, w / 2, 250); g.globalAlpha = 1;
+  } else if (G.reached && !justReached && G.phase !== 'ask'){
+    g.fillStyle = muted; F(g, '600', 15); g.fillText('이제 점수 없이 편하게 씹어요', w / 2, 250);
+  }
+  // 캐릭터
+  const happy = G.pops.some(p => p.big && now - p.t < 600) || (G.reached && now - G.swallowAt < 3000 && G.phase !== 'ask') || G.nodAt;
+  const m = charMotion(now), lastNote = G.notes.filter(n => n.t <= now).pop(), thump = lastNote && now - lastNote.t < 140 ? 4 * (1 - (now - lastNote.t) / 140) : 0;
+  const ccy = (match ? h - 232 : cy + 40) + thump;
+  // 내가 맞추기: 가운데 줄로 구미가 내려와 캐릭터 입에 쏙. 줄은 캐릭터 뒤에
+  const laneTop = 262, mouthY = ccy + r * 0.42, travel = Math.max(1800, 2.2 * G.b * 1000);
+  if (match){
+    g.fillStyle = panel; g.strokeStyle = line; g.lineWidth = 1;
+    g.beginPath(); g.roundRect(cx - 32, laneTop - 10, 64, mouthY - laneTop + 10, 22); g.fill(); g.stroke();
+    // 구미가 가까워지면 입이 살짝 벌어짐
+    const nx = G.notes.find(n => !n.guide && !n.hit && !n.missed && n.t > now - 30);
+    if (nx){ const left = nx.t - now, c = G.chewWin; if (left > 0 && left < c) m.open = Math.max(m.open, 0.7 * jawCurve(1 - left / c)); }
+  }
+  drawChar(g, cx, ccy, r, {open:m.open, mouth:m.mouth, chewing:m.chewing, side:m.side, happy: happy && !(m.mouth > 0.08)});
+  // 따라 하기: 오른쪽 아래 작은 '나' 캐릭터가 내 입 · 턱을 그대로 따라 함
+  if (!match){
+    const mx = w - 50, my = h - 196, mr = 28, recent = now - G.chewAt < 600;
+    g.globalAlpha = myBar ? 1 : 0.5;
+    drawChar(g, mx, my, mr, {open: Math.max(userOpen(), recent ? 0.5 * (1 - (now - G.chewAt) / 600) : 0), mouth: mouthOpen, chewing: true, side: recent ? G.side : 0});
+    g.globalAlpha = 1;
+    g.fillStyle = myBar ? accent : muted; F(g, '600', 13); g.textAlign = 'center'; g.fillText('나', mx, my + mr + 22);
+  }
+  if (G.phase === 'ask'){
+    const bx = cx + r * 0.9, by = ccy - r * 0.95;
+    g.fillStyle = panel; g.strokeStyle = G.nodAt ? good : accent; g.lineWidth = 2;
+    g.beginPath(); g.arc(bx, by, 22, 0, Math.PI * 2); g.fill(); g.stroke();
+    g.fillStyle = G.nodAt ? good : accent; F(g, '600', 26); g.textBaseline = 'middle'; g.fillText(G.nodAt ? '✓' : '?', bx, by + 1); g.textBaseline = 'alphabetic';
+  }
+  const visible = n => !n.hit;
+  if (match){
+    // 다음 구미에만 둘레 원: 내려오며 줄어들다 구미에 딱 붙는 순간 = 꼭
+    const ring = G.notes.find(n => !n.guide && !n.hit && !n.missed && n.t + latency > now);
+    if (ring && G.phase !== 'ask'){
+      const left = ring.t + latency - now, span = Math.min(travel * 0.6, 1400);
+      if (left < span){
+        const y = mouthY - left / travel * (mouthY - laneTop), k = left / span;
+        g.globalAlpha = 0.35 + 0.65 * (1 - k); g.strokeStyle = accent; g.lineWidth = 3;
+        g.beginPath(); g.arc(cx, y, 17 + 26 * k, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
+      }
+    }
+    G.notes.forEach(n => {
+      const left = n.t + latency - now;
+      if (left > travel || left < -250 || !visible(n)) return;
+      const y = mouthY - Math.max(0, left) / travel * (mouthY - laneTop);
+      const k = left < 0 ? Math.max(0, 1 + left / 250) : 1;   // 입에 들어가며 작아짐
+      g.globalAlpha = k;
+      shapePath(g, st.shape, cx, y, 15 * (0.4 + 0.6 * k)); g.fillStyle = n.missed ? line : shColor; g.fill();
+      g.globalAlpha = 1;
+    });
+  } else {
+    // 따라 하기: 아래 가로 줄. 빈 모양 = 캐릭터 차례, 찬 모양 = 내 차례
+    const ly = h - 128, travel = 2600;
+    g.strokeStyle = line; g.lineWidth = 2; g.beginPath(); g.moveTo(16, ly); g.lineTo(w - 16, ly); g.stroke();
+    g.strokeStyle = muted; g.lineWidth = 3; g.beginPath(); g.arc(cx, ly, 20, 0, Math.PI * 2); g.stroke();
+    G.notes.forEach(n => {
+      const left = n.t + latency - now;
+      if (left > travel || left < -400 || !visible(n)) return;
+      const x = cx + left / travel * (w - 16 - cx);
+      g.globalAlpha = left < 0 ? Math.max(0, 1 + left / 400) : 1;
+      shapePath(g, st.shape, x, ly, 13);
+      if (n.guide){ g.strokeStyle = muted; g.lineWidth = 2.5; g.stroke(); }
+      else { g.fillStyle = n.missed ? line : shColor; g.fill(); }
+      g.globalAlpha = 1;
+    });
+    if (myBar && G.phase !== 'ask'){
+      const next = G.notes.find(n => !n.guide && !n.hit && n.t + latency > now - 80);
+      if (next){
+        const left = (next.t + latency - now) / 1000;
+        if (left > 0 && left < G.b){ g.strokeStyle = accent; g.lineWidth = 3; g.beginPath(); g.arc(cx, ccy, r + 10 + left / G.b * 34, 0, Math.PI * 2); g.stroke(); }
+      }
+    }
+  }
+  // 콤보 숫자 (3번 연속부터)
+  if (G.combo >= 3 && !G.reached && G.phase !== 'ask'){
+    const since = now - G.chewAt, bump = since < 150 ? 1 + 0.25 * (1 - since / 150) : 1;
+    g.fillStyle = accent; g.textAlign = 'center';
+    const qx = match ? w * 0.17 : cx, qy = match ? ccy - r * 0.2 : ccy + r + 64;
+    F(g, '600', Math.round(44 * bump)); g.fillText(String(G.combo), qx, qy);
+    F(g, '600', 13); g.fillText('COMBO', qx, qy + 18);
+  }
+  // 반짝이 · 팝업
+  G.sparks = G.sparks.filter(sp => now - sp.t < 700);
+  G.sparks.forEach(sp => {
+    const k = (now - sp.t) / 700, d = r + 6 + k * sp.sp;
+    g.globalAlpha = 1 - k; g.fillStyle = sp.c ? css('--face') : accent;
+    star(g, cx + Math.cos(sp.a) * d, ccy + Math.sin(sp.a) * d, sp.size * (1 - k * .5));
+    g.globalAlpha = 1;
+  });
+  G.pops = G.pops.filter(p => now - p.t < 700);
+  G.pops.forEach(p => {
+    const a = 1 - (now - p.t) / 700, y = ccy - r - 30 - (1 - a) * 20;
+    g.globalAlpha = a; g.fillStyle = p.big ? good : muted; g.textAlign = 'center';
+    F(g, '600', p.big ? 26 : 18); g.fillText(p.text, cx, y);
+    if (p.sub){ F(g, '600', 14); g.fillText(p.sub, cx, y + 18); }
+    g.globalAlpha = 1;
+  });
+  // 콤보 띠: 5 · 10 · 20번 연속마다 크게
+  if (G.banner && now - G.banner.t < 1400){
+    const k = (now - G.banner.t) / 1400, sc = k < 0.12 ? 1.7 - 0.7 * (k / 0.12) : 1, a = k > 0.75 ? (1 - k) / 0.25 : 1;
+    const by = h * 0.3;
+    g.globalAlpha = a;
+    g.fillStyle = accent; g.fillRect(0, by - 40, w, 80);
+    g.fillStyle = '#fff'; g.textAlign = 'center';
+    F(g, '600', Math.round(40 * sc)); g.fillText(G.banner.n + ' COMBO!', w / 2, by + 8);
+    F(g, '600', 14); g.fillText('이제부터 점수 ×' + G.banner.mult, w / 2, by + 30);
+    g.globalAlpha = 1;
+  }
+}
 function drawGraph(now){
   const [g, w, h] = fit($('graph'));
   g.clearRect(0, 0, w, h);
   const x = t => w - (now - t) / 6000 * w;
-  const mid = h / 2, scale = h / 2 / 12;          // 잡음의 ±12배까지 보여줌
+  const mid = h / 2, scale = h / 2 / 12;
   g.strokeStyle = css('--line'); g.lineWidth = 1;
   g.beginPath(); g.moveTo(0, mid); g.lineTo(w, mid); g.stroke();
-  const s = SIG[sel()];
-  if (s.sd){
+  if (SIG[sel()].sd){
     g.setLineDash([3, 4]); g.strokeStyle = css('--muted');
     const yUp = mid - sens() * scale;
     g.beginPath(); g.moveTo(0, yUp); g.lineTo(w, yUp); g.stroke();
     g.setLineDash([]);
-    g.fillStyle = css('--muted'); g.font = '11px ' + css('--font');
-    g.fillText('씹기 기준선', 6, yUp - 4);
   }
   if (game){
     g.strokeStyle = css('--accent'); g.setLineDash([2, 4]);
-    game.targets.forEach(b => { const bx = x(b.t + latency); if (bx > 0 && bx < w){ g.beginPath(); g.moveTo(bx, 0); g.lineTo(bx, h); g.stroke(); } });
+    game.notes.forEach(n => { if (n.guide) return; const bx = x(n.t + latency); if (bx > 0 && bx < w){ g.beginPath(); g.moveTo(bx, 0); g.lineTo(bx, h); g.stroke(); } });
     g.setLineDash([]);
   }
   events.forEach(e => {
@@ -387,292 +2043,46 @@ function drawGraph(now){
     g.fillStyle = css('--accent'); g.globalAlpha = .35;
     g.fillRect(x(e.t) - 1.5, 0, 3, h); g.globalAlpha = 1;
   });
-  ['--s1', '--s2', '--s3', '--s4', '--s5'].forEach((c, i) => {
-    const sd = SIG[i].sd || 1;
+  ['--s0', '--s1', '--s2', '--s3', '--s4', '--s5'].forEach((c, i) => {
     g.strokeStyle = css(c); g.lineWidth = i === sel() ? 2.2 : 1; g.globalAlpha = i === sel() ? 1 : .55;
     g.beginPath();
     hist.forEach((p, k) => {
-      const y = Math.max(2, Math.min(h - 2, mid - (SIG[i].sd ? p.v[i] / sd : p.v[i] * 200) * scale));
+      const y = Math.max(2, Math.min(h - 2, mid - p.v[i] * scale));
       k ? g.lineTo(x(p.t), y) : g.moveTo(x(p.t), y);
     });
     g.stroke(); g.globalAlpha = 1;
   });
 }
-
-// ---- 아바타: 내 턱 신호만큼 입이 벌어짐 ----
-function drawAvatar(){
-  const cv = $('avatar');
-  if (cv.hidden) return;
-  const g = cv.getContext('2d'), w = cv.width, h = cv.height;
-  g.fillStyle = '#2b2c28'; g.fillRect(0, 0, w, h);
-  const s = SIG[sel()], last = hist[hist.length - 1];
-  const open = s.sd && last ? Math.max(0, Math.min(1, last.v[sel()] / (s.sd * 10))) : 0;
-  drawFace(g, w / 2, h / 2 + 10, 95, open, '#f2c14e');
+function drawMeter(){
+  if (screen !== 'setup' || $('setupC').hidden) return;
+  const last = hist[hist.length - 1];
+  const max = sens() * 2;   // 판정 선이 가운데에 오게
+  const v = SIG[sel()].sd && last ? Math.max(0, last.v[sel()]) : 0;
+  $('meter').children[0].style.width = Math.min(100, v / max * 100) + '%';
+  $('meter').children[1].style.left = '50%';
 }
-function drawFace(g, cx, cy, r, open, color, happy){
-  g.fillStyle = color; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill();
-  g.fillStyle = '#1c1d1a'; g.strokeStyle = '#1c1d1a'; g.lineCap = 'round';
-  if (happy){
-    // 웃는 눈(^ ^), 볼 터치, 활짝 웃는 입
-    g.lineWidth = Math.max(3, r * .07);
-    [-1, 1].forEach(d => { g.beginPath(); g.arc(cx + d * r * .35, cy - r * .15, r * .1, Math.PI * 1.1, Math.PI * 1.9); g.stroke(); });
-    g.fillStyle = 'rgba(240,110,110,.55)';
-    [-1, 1].forEach(d => { g.beginPath(); g.ellipse(cx + d * r * .55, cy + r * .12, r * .13, r * .08, 0, 0, Math.PI * 2); g.fill(); });
-    g.fillStyle = '#1c1d1a';
-    g.beginPath(); g.moveTo(cx - r * .32, cy + r * .25); g.quadraticCurveTo(cx, cy + r * .75, cx + r * .32, cy + r * .25); g.closePath(); g.fill();
-    return;
-  }
-  g.beginPath(); g.arc(cx - r * .35, cy - r * .2, r * .08, 0, Math.PI * 2); g.fill();
-  g.beginPath(); g.arc(cx + r * .35, cy - r * .2, r * .08, 0, Math.PI * 2); g.fill();
-  const mh = 3 + open * r * .45;
-  g.beginPath(); g.ellipse(cx, cy + r * .35, r * .32, mh / 2, 0, 0, Math.PI * 2); g.fill();
-}
-function star(g, x, y, s){
-  g.beginPath();
-  for (let k = 0; k < 8; k++){
-    const a = k * Math.PI / 4, rr = k % 2 ? s * .35 : s;
-    g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr);
-  }
-  g.closePath(); g.fill();
+function frame(){
+  const now = performance.now();
+  tick(now);
+  drawHome(now);
+  drawStage(now);
+  drawSix(now);
+  drawModeDemos(now);
+  drawMe(now);
+  drawAvatar();
+  drawMeter();
+  if ($('graph').offsetParent) drawGraph(now);
+  if (nod.base) $('nodInfo').textContent = '끄덕임: 고개 각도 ' + (Number.isFinite(nod.pitch) ? nod.pitch.toFixed(1) + '도' : '-') + ' · 움직임 ' + nod.d.toFixed(2) + ' (1을 넘었다 돌아오면 끄덕)';
+  requestAnimationFrame(frame);
 }
 
-// ---- 4단계: 리듬 테스트 ----
-let game = null, audio = null;
-// ---- 배경 음악: 박자(BPM)에 맞춰 즉석에서 만드는 짧은 반주 (저작권 없는 자체 생성음) ----
-let noiseBuf = null;
-function music(aStart, b, bars, out){
-  if (!noiseBuf){
-    noiseBuf = audio.createBuffer(1, audio.sampleRate * 0.1, audio.sampleRate);
-    const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-  }
-  const roots = [130.81, 110, 87.31, 98];                    // C - Am - F - G
-  const chords = [[261.63, 329.63, 392], [220, 261.63, 329.63], [174.61, 220, 261.63], [196, 246.94, 293.66]];
-  const osc = (type, freq, at, len, vol, glideTo) => {
-    const o = audio.createOscillator(), v = audio.createGain();
-    o.type = type; o.frequency.setValueAtTime(freq, at);
-    if (glideTo) o.frequency.exponentialRampToValueAtTime(glideTo, at + len);
-    v.gain.setValueAtTime(0, at); v.gain.linearRampToValueAtTime(vol, at + 0.01);
-    v.gain.exponentialRampToValueAtTime(0.0001, at + len);
-    o.connect(v).connect(out); o.start(at); o.stop(at + len + 0.05);
-  };
-  for (let bar = 0; bar < bars; bar++){
-    const c = bar % 4, t0 = aStart + bar * 4 * b;
-    chords[c].forEach(f => osc('triangle', f, t0, 4 * b, 0.035));          // 은은한 화음
-    for (let k = 0; k < 4; k++){
-      const at = t0 + k * b;
-      osc('sine', 120, at, 0.18, k % 2 ? 0.12 : 0.22, 45);                  // 쿵 (킥)
-      osc('triangle', roots[c] / (k % 2 ? 1 : 2) * 2, at, b * 0.8, 0.07);   // 베이스
-      const n = audio.createBufferSource(), hv = audio.createGain(), hp = audio.createBiquadFilter();
-      n.buffer = noiseBuf; hp.type = 'highpass'; hp.frequency.value = 7000;
-      const ht = at + b / 2;                                                // 박 사이 치 (하이햇)
-      hv.gain.setValueAtTime(0.06, ht); hv.gain.exponentialRampToValueAtTime(0.0001, ht + 0.05);
-      n.connect(hp).connect(hv).connect(out); n.start(ht); n.stop(ht + 0.06);
-    }
-  }
-}
+// 개발용: 콘솔에서 상태 보기
+window.kk = {get game(){ return game; }, check3(){ startCheck(); checkChew(); checkChew(); checkChew(); }, set mouth(v){ mouthOpen = v; }, get nod(){ return nod; }, onNod, charMotion};
 
-function tone(at, freq, len, vol){
-  const o = audio.createOscillator(), v = audio.createGain();
-  o.frequency.value = freq; o.type = 'sine';
-  v.gain.setValueAtTime(0, at); v.gain.linearRampToValueAtTime(vol, at + 0.005);
-  v.gain.exponentialRampToValueAtTime(0.0001, at + len);
-  o.connect(v).connect(audio.destination); o.start(at); o.stop(at + len + 0.02);
-}
-
-let wakeLock = null;
-async function keepAwake(on){
-  try {
-    if (on && 'wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
-    else if (!on && wakeLock){ await wakeLock.release(); wakeLock = null; }
-  } catch {}
-}
-
-$('playBtn').onclick = () => {
-  keepAwake(true);
-  audio = audio || new AudioContext();
-  audio.resume();
-  const mode = $('mode').value;
-  const bpm = Number($('bpm').value), b = 60 / bpm;
-  const lead = 0.3;
-  const aStart = audio.currentTime + lead, pStart = performance.now() + lead * 1000;
-  const targets = [];
-  let totalBars;
-  if (mode === 'follow'){
-    const pairs = Math.max(1, Math.floor((20 - 4 * b) / (8 * b)));
-    totalBars = 1 + pairs * 2;
-    for (let bar = 0; bar < totalBars; bar++) for (let k = 0; k < 4; k++){
-      const n = bar * 4 + k, at = aStart + n * b;
-      if (bar === 0) tone(at, k === 3 ? 880 : 660, 0.08, 0.25);           // 준비 박
-      else if (bar % 2 === 1) tone(at, k === 0 ? 990 : 740, 0.12, 0.35);  // 캐릭터 차례: 또렷한 "톡"
-      else { tone(at, 440, 0.05, 0.12); targets.push({t:pStart + n * b * 1000, hit:false, off:null}); } // 내 차례
-    }
-  } else {
-    totalBars = Math.max(2, Math.floor(20 / (4 * b)));
-    for (let bar = 0; bar < totalBars; bar++) for (let k = 0; k < 4; k++){
-      const n = bar * 4 + k, at = aStart + n * b;
-      if (bar === 0) tone(at, k === 3 ? 880 : 660, 0.08, 0.25);           // 준비 박
-      else if (bar % 4 === 0) tone(at, 330, 0.04, 0.06);                  // 쉬는 마디
-      else { tone(at, k === 0 ? 660 : 550, 0.06, 0.18); targets.push({t:pStart + n * b * 1000, hit:false, off:null}); }
-    }
-  }
-  let musicOut = null;
-  if ($('music').checked){
-    musicOut = audio.createGain(); musicOut.gain.value = 1; musicOut.connect(audio.destination);
-    music(aStart, b, totalBars, musicOut);
-  }
-  game = {musicOut, mode, b, totalBars, pStart, targets, extra:0, pops:[], sparks:[], win:Number($('win').value),
-          score:0, combo:0, maxCombo:0, happyUntil:0, travel:Math.max(1.2, 2 * b) * 1000};
-  $('result').hidden = true;
-  $('playBtn').disabled = true; $('stopBtn').disabled = false; $('mode').disabled = true;
-};
-$('stopBtn').onclick = () => finish(true);
-
-function onChew(t){
-  if (!game) return;
-  const tc = t - latency;
-  let best = null;
-  game.targets.forEach(bt => {
-    if (bt.hit) return;
-    const off = tc - bt.t;
-    if (Math.abs(off) <= game.win && (!best || Math.abs(off) < Math.abs(best.off))) best = {bt, off};
-  });
-  if (!best){ game.extra++; return; }
-  best.bt.hit = true; best.bt.off = best.off;
-  const exact = Math.abs(best.off) <= game.win * 0.4;
-  game.combo++; game.maxCombo = Math.max(game.maxCombo, game.combo);
-  const pts = (exact ? 100 : 60) + Math.min(game.combo, 10) * 5;   // 정확도 점수 + 연속 보너스(최대 +50)
-  game.score += pts;
-  game.happyUntil = t + 650;
-  game.pops.push({t, text: exact ? '딱 맞아요!' : '냠!', pts});
-  for (let k = 0; k < 10; k++){
-    const sp = {t, a: k / 10 * Math.PI * 2 + Math.random() * .4, sp: 50 + Math.random() * 50, size: 6 + Math.random() * 6, c: k % 2};
-    game.sparks.push(sp);                                         // 캐릭터 주변
-    if (game.mode === 'fall') game.sparks.push({...sp, atLane: true}); // 레인 원 주변
-  }
-  if (audio){ const at = audio.currentTime; tone(at, 523, 0.08, 0.3); tone(at + 0.07, exact ? 1046 : 784, 0.14, 0.3); }
-}
-
-function finish(stopped){
-  if (!game) return;
-  keepAwake(false);
-  const g = game; game = null;
-  if (g.musicOut){ const at = audio.currentTime; g.musicOut.gain.setValueAtTime(g.musicOut.gain.value, at); g.musicOut.gain.linearRampToValueAtTime(0, at + 0.3); setTimeout(() => g.musicOut.disconnect(), 400); }
-  $('playBtn').disabled = false; $('stopBtn').disabled = true; $('mode').disabled = false;
-  const done = g.targets.filter(b => b.t + latency + g.win < performance.now());
-  const hits = done.filter(b => b.hit);
-  const rate = done.length ? hits.length / done.length : 0;
-  const stars = rate >= .9 ? 3 : rate >= .7 ? 2 : rate >= .5 ? 1 : 0;
-  const box = $('result');
-  box.innerHTML = '';
-  [
-    ['점수', g.score.toLocaleString('ko-KR') + '점'],
-    ['별', stopped ? '중간에 멈춤' : (stars ? '★'.repeat(stars) + '☆'.repeat(3 - stars) : '☆☆☆')],
-    ['맞춘 박', hits.length + ' / ' + done.length + ' (' + Math.round(rate * 100) + '%)'],
-    ['최대 연속', g.maxCombo + '번'],
-  ].forEach(([k, v]) => { const d = document.createElement('div'); d.innerHTML = '<small class="muted"></small><b></b>'; d.children[0].textContent = k; d.children[1].textContent = v; box.appendChild(d); });
-  box.hidden = false;
-}
-
-function drawStage(now){
-  const [g, w, h] = fit($('stage'));
-  g.clearRect(0, 0, w, h);
-  const ink = css('--fg'), muted = css('--muted'), accent = css('--accent'), good = css('--good'), font = css('--font');
-  g.textAlign = 'center';
-  if (!game){
-    drawFace(g, w / 2, h * 0.42, Math.min(90, h * 0.26), 0, '#f2c14e', false);
-    g.fillStyle = muted; g.font = '15px ' + font;
-    g.fillText(SIG[0].sd ? '[시작]을 누르면 20초짜리 한 판이 시작돼요' : '위의 1, 2번을 먼저 해 주세요', w / 2, h - 24);
-    return;
-  }
-  const el = (now - game.pStart) / 1000;
-  if (el >= game.totalBars * 4 * game.b + game.win / 1000){ finish(false); return; }
-  const beat = Math.floor(el / game.b), bar = Math.floor(beat / 4), frac = ((el / game.b) % 1 + 1) % 1;
-  // 놓친 박: 연속 끊기
-  game.targets.forEach(bt => { if (!bt.hit && !bt.missed && now > bt.t + latency + game.win){ bt.missed = true; game.combo = 0; } });
-  const happy = now < game.happyUntil;
-  let cx, cy, r;
-
-  if (game.mode === 'follow'){
-    cx = w / 2; cy = h * 0.47; r = Math.min(80, h * 0.24);
-    const guide = bar >= 1 && bar % 2 === 1, mine = bar >= 2 && bar % 2 === 0;
-    const open = guide && el >= 0 ? Math.sin(Math.PI * frac) : 0;   // 박과 박 사이에 벌리고, 박에 닫힘
-    drawFace(g, cx, cy, r, open, '#f2c14e', happy);
-    g.font = '600 ' + (w < 500 ? 16 : 18) + 'px ' + font; g.fillStyle = mine ? accent : ink; g.textAlign = 'left';
-    g.fillText(el < 0 || bar === 0 ? '준비…' : guide ? '잘 보고 들어요' : '지금 따라 씹어요!', 16, 30); g.textAlign = 'center';
-    if (mine){
-      const next = game.targets.find(b => b.t + latency > now - 80);
-      if (next){
-        const left = (next.t + latency - now) / 1000;
-        if (left > 0 && left < game.b){ g.strokeStyle = accent; g.lineWidth = 3; g.beginPath(); g.arc(cx, cy, r + 8 + left / game.b * 36, 0, Math.PI * 2); g.stroke(); }
-      }
-    }
-    const barStart = bar * 4, cur = game.targets.filter(b => {
-      const n = Math.round((b.t - game.pStart) / 1000 / game.b);
-      return mine ? n >= barStart && n < barStart + 4 : n >= barStart + 4 && n < barStart + 8;
-    });
-    cur.forEach((b, k) => {
-      const x = cx + (k - 1.5) * 44, y = h - 46;
-      g.beginPath(); g.arc(x, y, 12, 0, Math.PI * 2);
-      if (b.hit){ g.fillStyle = good; g.fill(); }
-      else if (b.missed){ g.fillStyle = css('--line'); g.fill(); }
-      else { g.strokeStyle = muted; g.lineWidth = 2; g.stroke(); }
-    });
-  } else {
-    // 박자 맞추기: 왼쪽 캐릭터, 오른쪽 레인
-    r = Math.min(70, h * 0.2, w * 0.12); cx = Math.max(r + 16, w * 0.22); cy = h * 0.5;
-    const laneX = Math.min(w - 70, w * 0.62), topY = 62, hitY = h - 56;
-    g.fillStyle = css('--panel'); g.strokeStyle = css('--line'); g.lineWidth = 1;
-    g.beginPath(); g.roundRect(laneX - 45, 44, 90, h - 52, 14); g.fill(); g.stroke();
-    g.strokeStyle = muted; g.lineWidth = 3;
-    g.beginPath(); g.arc(laneX, hitY, 24, 0, Math.PI * 2); g.stroke();
-    game.targets.forEach(bt => {
-      if (bt.hit) return;
-      const left = bt.t + latency - now;
-      if (left > game.travel || left < -500) return;
-      const y = hitY - left / game.travel * (hitY - topY);
-      g.globalAlpha = bt.missed ? Math.max(0, 1 + left / 500) * .5 : 1;
-      g.fillStyle = bt.missed ? css('--line') : accent;
-      g.beginPath(); g.roundRect(laneX - 20, y - 16, 40, 32, 12); g.fill();
-      g.globalAlpha = 1;
-    });
-    drawFace(g, cx, cy, r, 0, '#f2c14e', happy);
-    g.font = '600 ' + (w < 500 ? 16 : 18) + 'px ' + font; g.fillStyle = ink; g.textAlign = 'left';
-    g.fillText(el < 0 || bar === 0 ? '준비…' : bar % 4 === 0 ? '쉬어요' : '동그라미에 닿을 때 씹어요', 16, 30); g.textAlign = 'center';
-  }
-
-  // 점수와 연속
-  g.textAlign = 'left'; g.font = '600 15px ' + font; g.fillStyle = ink;
-  g.fillText('점수 ' + game.score.toLocaleString('ko-KR'), 16, h - 18);
-  if (game.combo >= 2){ g.fillStyle = accent; g.fillText(game.combo + '번 연속', 16, h - 40); }
-  g.textAlign = 'center';
-
-  // 반짝이
-  const laneX = Math.min(w - 70, w * 0.62), hitY = h - 56;
-  game.sparks = game.sparks.filter(sp => now - sp.t < 700);
-  game.sparks.forEach(sp => {
-    const k = (now - sp.t) / 700, ox = sp.atLane ? laneX : cx, oy = sp.atLane ? hitY : cy, base = sp.atLane ? 24 : r;
-    const d = base + 6 + k * sp.sp;
-    g.globalAlpha = 1 - k; g.fillStyle = sp.c ? '#f2c14e' : accent;
-    star(g, ox + Math.cos(sp.a) * d, oy + Math.sin(sp.a) * d, sp.size * (1 - k * .5));
-    g.globalAlpha = 1;
-  });
-  // "냠!" 팝업
-  game.pops = game.pops.filter(p => now - p.t < 700);
-  game.pops.forEach(p => {
-    const a = 1 - (now - p.t) / 700;
-    const side = game.mode === 'follow' && w >= 560, corner = game.mode === 'follow' && w < 560;
-    const px = side ? Math.min(w - 80, cx + r + 110) : corner ? w - 16 : cx, py = side ? cy : corner ? 30 : cy - r - 30;
-    g.textAlign = corner ? 'right' : 'center';
-    g.globalAlpha = a; g.fillStyle = good; g.font = '700 ' + (w < 500 ? 22 : 26) + 'px ' + font;
-    g.fillText(p.text, px, py - (1 - a) * 18);
-    g.font = '600 14px ' + font; g.fillText('+' + p.pts, px, py + 24 - (1 - a) * 18);
-    g.globalAlpha = 1;
-  });
-}
-
-// 첫 화면
-drawStage(performance.now());
-addEventListener('resize', () => drawStage(performance.now()));
+todayDone = store.get('kk_days', []).includes(fmt(new Date()));
+renderCamChip();
+go('home');
+requestAnimationFrame(frame);
 </script>
 </body>
 </html>
